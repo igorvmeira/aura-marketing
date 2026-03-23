@@ -230,6 +230,10 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;font
       <button class="wbtn" onclick="changeWeek(1)">&#8594;</button>
     </div>
     <div class="topbar-right">
+      <button class="btn btn-ghost" onclick="abrirEdicao()">
+        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        Editar semana
+      </button>
       <button class="btn btn-ghost" onclick="deleteWeek()">
         <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>
         Excluir semana
@@ -328,7 +332,7 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;font
       <div class="sec">Todas as Semanas — Visão Comparativa</div>
       <div class="chart-card" style="overflow-x:auto">
         <table class="mt"><thead><tr>
-          <th>Semana</th><th>ROI</th><th>Investido</th><th>Retorno</th><th>Lucro</th><th>Grená</th><th>iFood</th><th>Google</th>
+          <th>Semana</th><th>ROI</th><th>Investido</th><th>Retorno</th><th>Lucro</th><th>iFood</th><th>Google</th>
         </tr></thead><tbody id="metricBody"></tbody></table>
       </div>
     </div>
@@ -337,7 +341,29 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;font
 </div><!-- /main -->
 </div><!-- /layout -->
 
-<!-- MODAL -->
+<!-- MODAL EDIÇÃO DE SEMANA -->
+<div class="overlay" id="overlayEdit" onclick="fecharEdicao(event)">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-head">
+      <div class="modal-ttl">✏️ Editar Semana</div>
+      <button class="mcls" onclick="fecharEdicao()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="margin-bottom:18px">
+        <div class="sec" style="margin-bottom:8px">Período da Semana</div>
+        <input id="edit_label" type="text" style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-family:'Outfit',sans-serif;font-size:0.85rem;background:var(--surface2);color:var(--text);outline:none" placeholder="Ex: 02 – 08 de março, 2025"/>
+      </div>
+      <div class="sec" style="margin-bottom:10px">Nomes das Campanhas</div>
+      <div id="editCampanhas" style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px"></div>
+      <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="salvarEdicao()">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+        Salvar alterações
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CAMPANHA -->
 <div class="overlay" id="overlay" onclick="closeModal(event)">
   <div class="modal">
     <div class="modal-head">
@@ -882,7 +908,6 @@ function renderGraficos() {
   ]},options:cOpts()});
 
   mk('cNotas',{type:'line',data:{labels,datasets:[
-    {label:'Grená', data:grena, borderColor:'#9b2335',backgroundColor:'transparent',tension:0.4,pointRadius:4},
     {label:'iFood', data:ifood, borderColor:'#ea1d2c',backgroundColor:'transparent',tension:0.4,pointRadius:4},
     {label:'Google',data:google,borderColor:'#4285f4',backgroundColor:'transparent',tension:0.4,pointRadius:4},
   ]},options:{...cOpts(),scales:{...cOpts().scales,y:{...cOpts().scales.y,min:0,max:6}}}});
@@ -900,11 +925,51 @@ function renderMetricas() {
       <td>${s.investido ? 'R$ '+s.investido : '—'}</td>
       <td>${s.retorno ? 'R$ '+s.retorno : '—'}</td>
       <td>${s.lucro ? 'R$ '+s.lucro : '—'}</td>
-      <td>${s.grena_sem||'—'}</td>
       <td>${s.ifood_sem||'—'}</td>
       <td>${s.google_sem||'—'}</td>`;
     body.appendChild(tr);
   });
+}
+
+// ════════════════════════════════
+// EDIÇÃO DE SEMANA
+// ════════════════════════════════
+function abrirEdicao() {
+  const s = DB.semanas[currentWeek];
+  document.getElementById('edit_label').value = s.label || '';
+
+  const cont = document.getElementById('editCampanhas');
+  cont.innerHTML = '';
+  s.campanhas.forEach((c, i) => {
+    cont.innerHTML += `
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="font-size:1.1rem;width:24px;text-align:center">${c.emoji}</span>
+        <input id="edit_camp_${i}" type="text" value="${c.nome}"
+          style="flex:1;padding:8px 12px;border:1px solid var(--border);border-radius:8px;
+          font-family:'Outfit',sans-serif;font-size:0.8rem;background:var(--surface2);
+          color:var(--text);outline:none"/>
+      </div>`;
+  });
+  document.getElementById('overlayEdit').classList.add('show');
+}
+
+function fecharEdicao(ev) {
+  if (ev && ev.target !== document.getElementById('overlayEdit')) return;
+  document.getElementById('overlayEdit').classList.remove('show');
+}
+
+function salvarEdicao() {
+  const s = DB.semanas[currentWeek];
+  s.label = document.getElementById('edit_label').value;
+  s.campanhas.forEach((c, i) => {
+    const el = document.getElementById(`edit_camp_${i}`);
+    if (el) c.nome = el.value;
+  });
+  document.getElementById('overlayEdit').classList.remove('show');
+  render();
+  recalcTudo();
+  autoSave();
+  toast('Semana atualizada!');
 }
 
 // ════════════════════════════════
