@@ -4,6 +4,41 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Aura Lounge Bar — Dashboard</title>
+<!-- Firebase -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getFirestore, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyDcWDrkW2w-cFTV3xKWtkLai2mKiXNpP8",
+    authDomain: "aura-freelancers-15511.firebaseapp.com",
+    databaseURL: "https://aura-freelancers-15511-default-rtdb.firebaseio.com",
+    projectId: "aura-freelancers-15511",
+    storageBucket: "aura-freelancers-15511.firebasestorage.app",
+    messagingSenderId: "33648940139​6",
+    appId: "1:336489401396:web:4974c3057d3561617ace61"
+  };
+
+  const app  = initializeApp(firebaseConfig);
+  const db   = getFirestore(app);
+  const REF  = doc(db, 'dashboard', 'dados');
+
+  // Expõe funções para o código global
+  window._fbSave = async (data) => {
+    await setDoc(REF, { payload: JSON.stringify(data) });
+  };
+
+  window._fbListen = (callback) => {
+    onSnapshot(REF, (snap) => {
+      if (snap.exists()) {
+        try { callback(JSON.parse(snap.data().payload)); } catch(e) {}
+      }
+    });
+  };
+
+  window._fbReady = true;
+  window.dispatchEvent(new Event('firebase-ready'));
+</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600&display=swap" rel="stylesheet"/>
 <style>
@@ -174,15 +209,14 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;font
     </div>
   </nav>
   <div class="sidebar-footer">
-    <button class="btn-side" onclick="exportarJSON()">
-      <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-      Exportar dados
+    <div id="syncStatus" style="display:flex;align-items:center;gap:6px;font-size:0.7rem;color:rgba(255,255,255,0.5);padding:4px 0">
+      <span id="syncDot" style="width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,0.3);flex-shrink:0"></span>
+      <span id="syncMsg">Conectando...</span>
+    </div>
+    <button class="btn-side" onclick="salvarNuvem()">
+      <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v14a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+      Salvar na nuvem
     </button>
-    <label class="btn-side" style="cursor:pointer">
-      <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-      Importar dados
-      <input type="file" accept=".json" style="display:none" onchange="importarJSON(event)"/>
-    </label>
   </div>
 </aside>
 
@@ -874,31 +908,51 @@ function renderMetricas() {
 }
 
 // ════════════════════════════════
-// EXPORTAR / IMPORTAR
+// FIREBASE — NUVEM
 // ════════════════════════════════
-function exportarJSON() {
-  const blob = new Blob([JSON.stringify(DB,null,2)],{type:'application/json'});
-  const url  = URL.createObjectURL(blob);
-  const a    = document.createElement('a');
-  a.href = url; a.download = 'aura-dados.json'; a.click();
-  URL.revokeObjectURL(url);
-  toast('Dados exportados! Salve no Google Drive.');
+
+function setSyncStatus(status) {
+  const dot = document.getElementById('syncDot');
+  const msg = document.getElementById('syncMsg');
+  if (status === 'online') {
+    dot.style.background = '#4caf7d';
+    msg.textContent = 'Sincronizado';
+  } else if (status === 'saving') {
+    dot.style.background = '#f4b942';
+    msg.textContent = 'Salvando...';
+  } else if (status === 'error') {
+    dot.style.background = '#e05c5c';
+    msg.textContent = 'Erro ao salvar';
+  } else {
+    dot.style.background = 'rgba(255,255,255,0.3)';
+    msg.textContent = 'Conectando...';
+  }
 }
 
-function importarJSON(ev) {
-  const file = ev.target.files[0]; if (!file) return;
-  const r = new FileReader();
-  r.onload = e => {
-    try {
-      DB = JSON.parse(e.target.result);
-      currentWeek = DB.semanas.length - 1;
-      render();
-      toast('Dados importados com sucesso!');
-    } catch { toast('Erro ao ler o arquivo JSON.'); }
-  };
-  r.readAsText(file);
-  ev.target.value = '';
+async function salvarNuvem() {
+  if (!window._fbSave) { toast('Firebase ainda carregando...'); return; }
+  setSyncStatus('saving');
+  try {
+    await window._fbSave(DB);
+    setSyncStatus('online');
+    toast('Dados salvos na nuvem! ☁️');
+  } catch(err) {
+    setSyncStatus('error');
+    toast('Erro ao salvar. Tente novamente.');
+    console.error(err);
+  }
 }
+
+// Auto-save 2s após última edição
+let saveTimer = null;
+function autoSave() {
+  clearTimeout(saveTimer);
+  setSyncStatus('saving');
+  saveTimer = setTimeout(() => salvarNuvem(), 2000);
+}
+
+// Sobrescreve render para disparar auto-save
+const _origInput = document.addEventListener.bind(document);
 
 function toast(msg) {
   const t = document.getElementById('toast');
@@ -907,9 +961,56 @@ function toast(msg) {
   setTimeout(() => t.classList.remove('show'), 3200);
 }
 
-// INIT
-render();
-recalcTudo();
+// ── INIT ──
+function iniciar(dadosNuvem) {
+  if (dadosNuvem && dadosNuvem.semanas && dadosNuvem.semanas.length > 0) {
+    DB = dadosNuvem;
+  }
+  currentWeek = DB.semanas.length - 1;
+  render();
+  recalcTudo();
+  setSyncStatus('online');
+
+  // Escuta mudanças em tempo real de outros dispositivos
+  if (window._fbListen) {
+    window._fbListen((dados) => {
+      DB = dados;
+      render();
+      recalcTudo();
+    });
+  }
+}
+
+// Escuta edições para auto-save
+document.addEventListener('input', () => autoSave(), true);
+
+// Aguarda Firebase carregar
+if (window._fbReady) {
+  // já carregou
+  window._fbSave && window._fbListen
+    ? (async () => {
+        setSyncStatus('connecting');
+        // Carrega dados existentes
+        window._fbListen((dados) => iniciar(dados));
+        // Timeout caso não haja dados ainda
+        setTimeout(() => {
+          if (DB.semanas.length === 0) iniciar(null);
+        }, 3000);
+      })()
+    : iniciar(null);
+} else {
+  window.addEventListener('firebase-ready', () => {
+    window._fbListen((dados) => iniciar(dados));
+    setTimeout(() => {
+      if (!DB.semanas || DB.semanas.length === 0) iniciar(null);
+    }, 3000);
+  });
+  // Inicia sem Firebase por segurança
+  setTimeout(() => {
+    if (!DB.semanas || DB.semanas.length === 0) iniciar(null);
+  }, 5000);
+}
+</script>
 </script>
 </body>
 </html>
