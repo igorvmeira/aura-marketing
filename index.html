@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Aura Lounge Bar — Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --green:#5c6b4a; --green-l:#6e7f5a; --green-s:rgba(92,107,74,0.12);
+  --bg:#f4f3ef; --surface:#fff; --surface2:#f8f7f3;
+  --border:rgba(0,0,0,0.07); --text:#1a1c18; --muted:#8a8a7e;
+  --red:#c0392b; --red-s:rgba(192,57,43,0.1);
+  --pos:#2d6a4f; --pos-s:rgba(45,106,79,0.1);
+  --radius:14px; --radius-sm:10px;
+  --shadow:0 1px 3px rgba(0,0,0,0.05),0 4px 16px rgba(0,0,0,0.04);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;font-weight:300;min-height:100vh;}
+.layout{display:flex;min-height:100vh;}
+
+/* SIDEBAR */
+.sidebar{width:210px;flex-shrink:0;background:var(--green);display:flex;flex-direction:column;padding:28px 0;position:sticky;top:0;height:100vh;}
+.logo-area{padding:0 20px 28px;border-bottom:1px solid rgba(255,255,255,0.1);margin-bottom:20px;}
+.logo-svg{width:130px;}
+.sidebar-sub{font-size:0.55rem;letter-spacing:0.28em;color:rgba(255,255,255,0.4);text-transform:uppercase;margin-top:7px;}
+.nav-item{display:flex;align-items:center;gap:9px;padding:10px 20px;font-size:0.8rem;font-weight:400;color:rgba(255,255,255,0.58);cursor:pointer;border-left:2px solid transparent;transition:all .2s;letter-spacing:.02em;}
+.nav-item:hover{color:#fff;background:rgba(255,255,255,0.05);}
+.nav-item.active{color:#fff;border-left-color:#fff;background:rgba(255,255,255,0.09);font-weight:500;}
+.nav-ico{width:15px;height:15px;opacity:.8;}
+.sidebar-footer{margin-top:auto;padding:18px 20px 0;border-top:1px solid rgba(255,255,255,0.1);display:flex;flex-direction:column;gap:7px;}
+.btn-side{display:flex;align-items:center;justify-content:center;gap:6px;padding:8px 14px;border-radius:8px;font-family:'Outfit',sans-serif;font-size:0.73rem;font-weight:400;cursor:pointer;border:1px solid rgba(255,255,255,0.2);background:transparent;color:rgba(255,255,255,0.65);transition:all .2s;width:100%;}
+.btn-side:hover{background:rgba(255,255,255,0.1);color:#fff;}
+
+/* MAIN */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+
+/* TOPBAR */
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;position:sticky;top:0;z-index:10;}
+.week-nav{display:flex;align-items:center;gap:8px;}
+.wbtn{width:30px;height:30px;border-radius:7px;border:1px solid var(--border);background:var(--surface2);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--muted);transition:all .2s;font-size:0.85rem;}
+.wbtn:hover{background:var(--green);color:#fff;border-color:var(--green);}
+.week-lbl{font-size:0.82rem;font-weight:500;color:var(--text);min-width:220px;text-align:center;}
+.topbar-right{display:flex;align-items:center;gap:8px;}
+.btn{display:flex;align-items:center;gap:5px;padding:7px 14px;border-radius:7px;font-family:'Outfit',sans-serif;font-size:0.75rem;font-weight:500;cursor:pointer;border:none;transition:all .2s;}
+.btn-primary{background:var(--green);color:#fff;}
+.btn-primary:hover{background:var(--green-l);}
+.btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border);}
+.btn-ghost:hover{background:var(--surface2);}
+
+/* CONTENT */
+.content{padding:24px 28px;flex:1;overflow-y:auto;}
+.page{display:none;}.page.active{display:block;}
+
+/* SECTION TITLE */
+.sec{font-size:0.6rem;font-weight:600;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);margin-bottom:13px;margin-top:4px;}
+
+/* PLATAFORMAS */
+.plat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:18px;}
+.plat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);}
+.plat-head{display:flex;align-items:center;gap:9px;margin-bottom:13px;}
+.plat-ico{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1rem;}
+.plat-name{font-size:0.83rem;font-weight:500;}
+.plat-sub{font-size:0.62rem;color:var(--muted);}
+.plat-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border);}
+.plat-row:last-child{border-bottom:none;}
+.pl{font-size:0.7rem;color:var(--muted);}
+.pv{font-size:0.82rem;font-weight:400;}
+.stars{color:#f4b942;font-size:0.75rem;letter-spacing:1px;}
+
+/* RESUMO */
+.resumo-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px;}
+.kpi-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);}
+.kpi-lbl{font-size:0.65rem;color:var(--muted);margin-bottom:7px;letter-spacing:.04em;}
+.kpi-val{font-size:1.65rem;font-weight:300;line-height:1;margin-bottom:6px;}
+.kpi-val.green{color:var(--pos);}
+.badge{display:inline-flex;align-items:center;gap:3px;font-size:0.68rem;padding:2px 8px;border-radius:100px;}
+.pos{background:var(--pos-s);color:var(--pos);}
+.neg{background:var(--red-s);color:var(--red);}
+
+/* CAMPANHAS */
+.camp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:13px;margin-bottom:18px;}
+.camp-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:16px;box-shadow:var(--shadow);cursor:pointer;transition:border-color .2s,transform .15s;}
+.camp-card:hover{border-color:var(--green);transform:translateY(-1px);}
+.camp-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:11px;}
+.camp-name{font-size:0.77rem;font-weight:500;line-height:1.3;max-width:130px;}
+.camp-emoji{font-size:1.1rem;margin-bottom:3px;}
+.roi-badge{font-size:0.68rem;font-weight:600;padding:2px 8px;border-radius:100px;white-space:nowrap;}
+.divider{height:1px;background:var(--border);margin:9px 0;}
+.crow{display:flex;justify-content:space-between;align-items:center;padding:3px 0;}
+.cl{font-size:0.63rem;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;}
+.cv{font-size:0.78rem;}
+
+/* EDITABLE */
+.e{background:transparent;border:none;border-bottom:1px dashed rgba(0,0,0,0.1);color:inherit;font-family:'Outfit',sans-serif;font-size:inherit;font-weight:inherit;outline:none;transition:border-color .2s;cursor:text;}
+.e:focus{border-color:var(--green);background:rgba(92,107,74,0.04);border-radius:2px;}
+.er{text-align:right;}
+
+/* OBS */
+.obs-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:17px;margin-bottom:18px;box-shadow:var(--shadow);}
+.obs-ta{width:100%;background:transparent;border:none;outline:none;font-family:'Outfit',sans-serif;font-size:0.8rem;font-weight:300;color:var(--text);resize:none;min-height:55px;line-height:1.7;}
+.obs-ta::placeholder{color:var(--muted);}
+
+/* GRÁFICOS */
+.chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+.chart-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);}
+.chart-title{font-size:0.78rem;font-weight:500;margin-bottom:15px;}
+.chart-wrap{position:relative;height:210px;}
+
+/* MÉTRICAS */
+.mt{width:100%;border-collapse:collapse;}
+.mt th{font-size:0.6rem;letter-spacing:.17em;text-transform:uppercase;color:var(--muted);font-weight:500;text-align:left;padding:0 10px 11px 0;border-bottom:1px solid var(--border);}
+.mt td{padding:11px 10px 11px 0;font-size:0.78rem;border-bottom:1px solid var(--border);}
+.mt tr:last-child td{border-bottom:none;}
+.mt td:not(:first-child){text-align:right;}
+.mt th:not(:first-child){text-align:right;}
+
+/* MODAL */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.38);z-index:100;align-items:center;justify-content:center;backdrop-filter:blur(3px);}
+.overlay.show{display:flex;}
+.modal{background:var(--surface);border-radius:var(--radius);width:92%;max-width:660px;max-height:82vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.18);animation:slideUp .22s ease;}
+.modal-head{padding:18px 22px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:var(--surface);z-index:2;}
+.modal-ttl{font-size:0.95rem;font-weight:500;}
+.mcls{width:28px;height:28px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;color:var(--muted);transition:all .2s;}
+.mcls:hover{background:var(--red-s);color:var(--red);}
+.modal-body{padding:20px 22px;}
+.modal-chart-wrap{height:190px;margin-bottom:14px;}
+
+/* TOAST */
+.toast{position:fixed;bottom:22px;right:22px;background:var(--green);color:#fff;padding:11px 18px;border-radius:9px;font-size:0.78rem;display:flex;align-items:center;gap:7px;z-index:200;transform:translateY(70px);opacity:0;transition:all .3s cubic-bezier(.4,0,.2,1);}
+.toast.show{transform:translateY(0);opacity:1;}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.plat-card,.kpi-card,.camp-card,.chart-card,.obs-card{animation:fadeUp .35s ease both;}
+</style>
+</head>
+<body>
+<div class="layout">
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="logo-area">
+    <svg class="logo-svg" viewBox="0 0 150 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <!-- A -->
+      <polyline points="2,42 15,14 28,42" stroke="white" stroke-width="1.6" fill="none" stroke-linejoin="round"/>
+      <line x1="8" y1="34" x2="22" y2="34" stroke="white" stroke-width="1.6"/>
+      <!-- U -->
+      <path d="M36,14 L36,33 Q36,42 45,42 Q54,42 54,33 L54,14" stroke="white" stroke-width="1.6" fill="none"/>
+      <!-- R -->
+      <line x1="62" y1="42" x2="62" y2="14" stroke="white" stroke-width="1.6"/>
+      <path d="M62,14 L73,14 Q80,14 80,23 Q80,32 73,32 L62,32" stroke="white" stroke-width="1.6" fill="none"/>
+      <line x1="72" y1="32" x2="81" y2="42" stroke="white" stroke-width="1.6"/>
+      <!-- A inv -->
+      <polyline points="90,42 103,14 116,42" stroke="white" stroke-width="1.6" fill="none" stroke-linejoin="round"/>
+      <line x1="96" y1="34" x2="110" y2="34" stroke="white" stroke-width="1.6"/>
+      <line x1="103" y1="42" x2="116" y2="42" stroke="white" stroke-width="1.6"/>
+    </svg>
+    <div class="sidebar-sub">Lounge Bar</div>
+  </div>
+  <nav>
+    <div class="nav-item active" onclick="showPage('dashboard',this)">
+      <svg class="nav-ico" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      Dashboard
+    </div>
+    <div class="nav-item" onclick="showPage('graficos',this)">
+      <svg class="nav-ico" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      Gráficos
+    </div>
+    <div class="nav-item" onclick="showPage('metricas',this)">
+      <svg class="nav-ico" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+      Métricas
+    </div>
+  </nav>
+  <div class="sidebar-footer">
+    <button class="btn-side" onclick="exportarJSON()">
+      <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Exportar dados
+    </button>
+    <label class="btn-side" style="cursor:pointer">
+      <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      Importar dados
+      <input type="file" accept=".json" style="display:none" onchange="importarJSON(event)"/>
+    </label>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="week-nav">
+      <button class="wbtn" onclick="changeWeek(-1)">&#8592;</button>
+      <div class="week-lbl" id="weekLbl">—</div>
+      <button class="wbtn" onclick="changeWeek(1)">&#8594;</button>
+    </div>
+    <div class="topbar-right">
+      <button class="btn btn-ghost" onclick="deleteWeek()">
+        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>
+        Excluir semana
+      </button>
+      <button class="btn btn-primary" onclick="newWeek()">
+        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Nova semana
+      </button>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- ═══ DASHBOARD ═══ -->
+    <div class="page active" id="page-dashboard">
+
+      <div class="sec">Resumo da Semana</div>
+      <div class="resumo-grid">
+        <div class="kpi-card">
+          <div class="kpi-lbl">ROI Geral <span style="font-size:0.55rem;color:var(--pos);letter-spacing:.05em">AUTO</span></div>
+          <div class="kpi-val green"><input class="e" id="roi" value="" style="width:85px;color:var(--pos)" readonly tabindex="-1"/>%</div>
+          <div class="badge pos" id="roi_badge">—</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-lbl">Lucro / Faturamento <span style="font-size:0.55rem;color:var(--pos);letter-spacing:.05em">AUTO</span></div>
+          <div class="kpi-val">R$&nbsp;<input class="e" id="lucro" value="" style="width:95px;color:var(--pos)" readonly tabindex="-1"/></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-lbl">Total Investido</div>
+          <div class="kpi-val">R$&nbsp;<input class="e" id="investido" value="" style="width:95px"/></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-lbl">Retorno Total</div>
+          <div class="kpi-val">R$&nbsp;<input class="e" id="retorno" value="" style="width:95px"/></div>
+        </div>
+      </div>
+
+      <div class="sec">Campanhas</div>
+      <div class="camp-grid" id="campGrid"></div>
+
+      <div class="sec" style="margin-top:4px">Observações Semanais</div>
+      <div class="obs-card">
+        <textarea class="obs-ta" id="obs" placeholder="Digite suas observações sobre a semana..."></textarea>
+      </div>
+
+      <div class="sec" style="margin-top:4px">Notas &amp; Avaliações dos Clientes</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px">
+        <!-- iFood -->
+        <div class="plat-card">
+          <div class="plat-head">
+            <div class="plat-ico" style="background:#fff0f0">🛵</div>
+            <div><div class="plat-name">iFood</div><div class="plat-sub">Plataforma delivery</div></div>
+          </div>
+          <div class="plat-row"><span class="pl">Nota Geral (histórico)</span><span class="pv"><input class="e er" id="ifood_geral" value="" style="width:34px"/> <span class="stars">★★★★★</span></span></div>
+          <div class="plat-row"><span class="pl">Nota Média da Semana</span><span class="pv"><input class="e er" id="ifood_sem" value="" style="width:34px"/></span></div>
+          <div class="plat-row" style="border-bottom:none"><span class="pl">Avaliações na Semana</span><span class="pv"><input class="e er" id="ifood_aval" value="" style="width:34px"/></span></div>
+          <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
+            <div class="pl" style="margin-bottom:6px">Comentários de avaliações</div>
+            <textarea class="obs-ta" id="ifood_comentarios" placeholder="Cole ou registre comentários de clientes do iFood..." style="min-height:70px;font-size:0.75rem"></textarea>
+          </div>
+        </div>
+        <!-- Google -->
+        <div class="plat-card">
+          <div class="plat-head">
+            <div class="plat-ico" style="background:#f0f4ff">🔍</div>
+            <div><div class="plat-name">Google</div><div class="plat-sub">Avaliações Maps</div></div>
+          </div>
+          <div class="plat-row"><span class="pl">Nota Geral (histórico)</span><span class="pv"><input class="e er" id="google_geral" value="" style="width:34px"/> <span class="stars">★★★★★</span></span></div>
+          <div class="plat-row"><span class="pl">Nota Média da Semana</span><span class="pv"><input class="e er" id="google_sem" value="" style="width:34px"/></span></div>
+          <div class="plat-row" style="border-bottom:none"><span class="pl">Avaliações na Semana</span><span class="pv"><input class="e er" id="google_aval" value="" style="width:34px"/></span></div>
+          <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
+            <div class="pl" style="margin-bottom:6px">Comentários de avaliações</div>
+            <textarea class="obs-ta" id="google_comentarios" placeholder="Cole ou registre comentários de clientes do Google..." style="min-height:70px;font-size:0.75rem"></textarea>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /dashboard -->
+
+    <!-- ═══ GRÁFICOS ═══ -->
+    <div class="page" id="page-graficos">
+      <div class="sec">Histórico — Todas as Semanas</div>
+      <div class="chart-grid">
+        <div class="chart-card"><div class="chart-title">Custo Total vs Faturamento por Semana</div><div class="chart-wrap"><canvas id="cCF"></canvas></div></div>
+        <div class="chart-card"><div class="chart-title">ROI por Semana (%)</div><div class="chart-wrap"><canvas id="cROI"></canvas></div></div>
+      </div>
+      <div class="chart-grid">
+        <div class="chart-card"><div class="chart-title">Adesões Totais por Semana</div><div class="chart-wrap"><canvas id="cAdes"></canvas></div></div>
+        <div class="chart-card"><div class="chart-title">Notas das Plataformas por Semana</div><div class="chart-wrap"><canvas id="cNotas"></canvas></div></div>
+      </div>
+    </div>
+
+    <!-- ═══ MÉTRICAS ═══ -->
+    <div class="page" id="page-metricas">
+      <div class="sec">Todas as Semanas — Visão Comparativa</div>
+      <div class="chart-card" style="overflow-x:auto">
+        <table class="mt"><thead><tr>
+          <th>Semana</th><th>ROI</th><th>Investido</th><th>Retorno</th><th>Lucro</th><th>Grená</th><th>iFood</th><th>Google</th>
+        </tr></thead><tbody id="metricBody"></tbody></table>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+</div><!-- /layout -->
+
+<!-- MODAL -->
+<div class="overlay" id="overlay" onclick="closeModal(event)">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-ttl" id="modalTtl">—</div>
+      <button class="mcls" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="chart-wrap modal-chart-wrap"><canvas id="chartModal"></canvas></div>
+      <div id="modalTable"></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast">✓ <span id="toastMsg"></span></div>
+
+<script>
+// ════════════════════════════════
+// ESTRUTURA DE DADOS
+// ════════════════════════════════
+
+// Cada semana tem:
+// plataformas: grena/ifood/google (geral, sem, aval)
+// resumo: roi, lucro, investido, retorno
+// campanhas[6]: campos específicos por tipo
+// obs
+
+// Tipos de campanha e campos:
+// festival (massas/peixes): investimento, retorno, adesoes, lucro_adesoes, faturamento_dia, faturamento_periodo
+// aniversario: investimento, retorno, reservas_feitas, receita_garantida
+// pagode: investimento, retorno, faturamento_dia
+// delivery: investimento, total_compras, pedidos, ticket_medio
+// balada: investimento, retorno, faturamento_periodo
+
+const CAMP_DEF = [
+  { id:'massas',   nome:'Festival de Massas, Risotos e Pizzas', emoji:'🍝', tipo:'festival'    },
+  { id:'peixes',   nome:'Festival de Petiscos',                   emoji:'🍢', tipo:'festival'    },
+  { id:'aniv',     nome:'Campanha de Aniversário',               emoji:'🎉', tipo:'aniversario' },
+  { id:'pagode',   nome:'Pagode do Nosso Jeito',                  emoji:'🎵', tipo:'pagode'      },
+  { id:'delivery', nome:'Delivery',                              emoji:'🛵', tipo:'delivery'    },
+
+];
+
+function campVazia(def) {
+  return { id:def.id, nome:def.nome, emoji:def.emoji, tipo:def.tipo,
+    investimento:'', retorno:'', adesoes:'', lucro_adesoes:'',
+    faturamento_dia:'', faturamento_periodo:'',
+    reservas_feitas:'', receita_garantida:'',
+    total_compras:'', pedidos:'', ticket_medio:'',
+    roi_perc:'' };
+}
+
+function semanaVazia() {
+  const hoje = new Date();
+  const ini = new Date(hoje); ini.setDate(hoje.getDate() - hoje.getDay() + 1);
+  const fim = new Date(ini); fim.setDate(ini.getDate() + 6);
+  const f = d => d.toLocaleDateString('pt-BR',{day:'2-digit',month:'long'});
+  return {
+    label:`${f(ini)} – ${f(fim).split(' ').slice(-2).join(' ')}, ${hoje.getFullYear()}`,
+    grena_geral:'', grena_sem:'', grena_aval:'',
+    ifood_geral:'', ifood_sem:'', ifood_aval:'', ifood_comentarios:'',
+    google_geral:'', google_sem:'', google_aval:'', google_comentarios:'',
+    roi:'', lucro:'', investido:'', retorno:'', obs:'',
+    campanhas: CAMP_DEF.map(campVazia)
+  };
+}
+
+// ════ DADOS REAIS DOS PRINTS ════
+let DB = { semanas: [
+  // SEMANA 1: 02–08 fev 2025
+  { label:'02 – 08 de fevereiro, 2025',
+    grena_geral:'4.2', grena_sem:'4.2', grena_aval:'4',
+    ifood_geral:'4.2', ifood_sem:'',    ifood_aval:'1',
+    google_geral:'4.4',google_sem:'4.8',google_aval:'0',
+    roi:'+571.5', lucro:'5.298,55', investido:'927,11', retorno:'8.225,70',
+    obs:'',
+    campanhas:[
+      { id:'massas',   nome:'Festival de Massas, Risotos e Pizzas', emoji:'🍝', tipo:'festival',
+        investimento:'136,01', retorno:'139,20', adesoes:'4', lucro_adesoes:'4',
+        faturamento_dia:'109,80', faturamento_periodo:'126,20',
+        reservas_feitas:'', receita_garantida:'', total_compras:'', pedidos:'', ticket_medio:'', roi_perc:'+214.9' },
+      { id:'peixes',   nome:'Festival de Petiscos', emoji:'🍢', tipo:'festival',
+        investimento:'147,17', retorno:'946,10', adesoes:'19', lucro_adesoes:'15',
+        faturamento_dia:'45,80', faturamento_periodo:'57,18',
+        reservas_feitas:'', receita_garantida:'', total_compras:'', pedidos:'', ticket_medio:'', roi_perc:'+241.5' },
+      { id:'aniv',     nome:'Campanha de Aniversário', emoji:'🎉', tipo:'aniversario',
+        investimento:'347,19', retorno:'0,00', adesoes:'', lucro_adesoes:'',
+        faturamento_dia:'', faturamento_periodo:'',
+        reservas_feitas:'', receita_garantida:'', total_compras:'', pedidos:'', ticket_medio:'', roi_perc:'-100.0' },
+      { id:'pagode',   nome:'Pagode do Nosso Jeito', emoji:'🎵', tipo:'pagode',
+        investimento:'136,31', retorno:'3.600,00', adesoes:'', lucro_adesoes:'',
+        faturamento_dia:'32.753,00', faturamento_periodo:'',
+        reservas_feitas:'', receita_garantida:'', total_compras:'', pedidos:'', ticket_medio:'', roi_perc:'+719.4' },
+      { id:'delivery', nome:'Delivery', emoji:'🛵', tipo:'delivery',
+        investimento:'2,32', retorno:'', adesoes:'', lucro_adesoes:'',
+        faturamento_dia:'', faturamento_periodo:'',
+        reservas_feitas:'', receita_garantida:'', total_compras:'1.649,54', pedidos:'17', ticket_medio:'3,32', roi_perc:'-465.9' },
+    ]
+  },
+  // SEMANA 2: 06–12 fev 2025
+  { label:'06 – 12 de fevereiro, 2025',
+    grena_geral:'4.2', grena_sem:'4.2', grena_aval:'2',
+    ifood_geral:'4.3', ifood_sem:'5.0', ifood_aval:'4',
+    google_geral:'6.0', google_sem:'',  google_aval:'0',
+    roi:'+178.6', lucro:'1.404,75', investido:'789,71', retorno:'2.191,50',
+    obs:'',
+    campanhas:[
+      { id:'massas', nome:'Festival de Massas, Risotos e Pizzas', emoji:'🍝', tipo:'festival',
+        investimento:'142,24', retorno:'1.782,30', adesoes:'25', lucro_adesoes:'21',
+        faturamento_dia:'71,80', faturamento_periodo:'8,80',
+        reservas_feitas:'', receita_garantida:'', total_compras:'', pedidos:'', ticket_medio:'', roi_perc:'+1152.2' },
+      { id:'peixes', nome:'Festival de Petiscos', emoji:'🍢', tipo:'festival',
+        investimento:'146,25', retorno:'399,20', adesoes:'9', lucro_adesoes:'7',
+        faturamento_dia:'11,50', faturamento_periodo:'15,50',
+        reservas_feitas:'', receita_garantida:'', total_compras:'', pedidos:'', ticket_medio:'', roi_perc:'+173.2' },
+      { id:'aniv', nome:'Campanha de Aniversário', emoji:'🎉', tipo:'aniversario',
+        investimento:'341,45', retorno:'0,00', adesoes:'', lucro_adesoes:'',
+        faturamento_dia:'', faturamento_periodo:'',
+        reservas_feitas:'', receita_garantida:'', total_compras:'', pedidos:'', ticket_medio:'', roi_perc:'-100.0' },
+      { id:'pagode', nome:'Pagode do Nosso Jeito', emoji:'🎵', tipo:'pagode',
+        investimento:'0,00', retorno:'0,00', adesoes:'', lucro_adesoes:'',
+        faturamento_dia:'0,00', faturamento_periodo:'',
+        reservas_feitas:'', receita_garantida:'', total_compras:'', pedidos:'', ticket_medio:'', roi_perc:'-4.2' },
+      { id:'delivery', nome:'Delivery', emoji:'🛵', tipo:'delivery',
+        investimento:'3,41', retorno:'', adesoes:'', lucro_adesoes:'',
+        faturamento_dia:'', faturamento_periodo:'',
+        reservas_feitas:'', receita_garantida:'', total_compras:'2.058,62', pedidos:'', ticket_medio:'2,41', roi_perc:'-465.9' },
+    ]
+  },
+  // SEMANA 3: 16–22 fev 2025
+  { label:'16 – 22 de fevereiro, 2025',
+    grena_geral:'4.07', grena_sem:'4.07', grena_aval:'3',
+    ifood_geral:'4.6', ifood_sem:'3.7', ifood_aval:'3',
+    google_geral:'4.4', google_sem:'4.4', google_aval:'1',
+    roi:'+857.7', lucro:'5.377,81', investido:'817,89', retorno:'6.195,50',
+    obs:'',
+    campanhas:[
+      { id:'massas', nome:'Festival de Massas, Risotos e Pizzas', emoji:'🍝', tipo:'festival',
+        investimento:'144,14', retorno:'1.997,10', adesoes:'26', lucro_adesoes:'26',
+        faturamento_dia:'87,15', faturamento_periodo:'8,10',
+        reservas_feitas:'', receita_garantida:'', total_compras:'', pedidos:'', ticket_medio:'', roi_perc:'+1325.2' },
+      { id:'peixes', nome:'Festival de Petiscos', emoji:'🍢', tipo:'festival',
+        investimento:'141,40', retorno:'516,90', adesoes:'11', lucro_adesoes:'11',
+        faturamento_dia:'46,80', faturamento_periodo:'12,58',
+        reservas_feitas:'', receita_garantida:'', total_compras:'', pedidos:'', ticket_medio:'', roi_perc:'+265.3' },
+      { id:'aniv', nome:'Campanha de Aniversário', emoji:'🎉', tipo:'aniversario',
+        investimento:'351,79', retorno:'0,00', adesoes:'', lucro_adesoes:'',
+        faturamento_dia:'', faturamento_periodo:'',
+        reservas_feitas:'1', receita_garantida:'5,00', total_compras:'', pedidos:'', ticket_medio:'', roi_perc:'-100.0' },
+      { id:'pagode', nome:'Pagode do Nosso Jeito', emoji:'🎵', tipo:'pagode',
+        investimento:'22,76', retorno:'3.368,00', adesoes:'', lucro_adesoes:'',
+        faturamento_dia:'27.150,17', faturamento_periodo:'',
+        reservas_feitas:'', receita_garantida:'', total_compras:'', pedidos:'', ticket_medio:'', roi_perc:'+4622.7' },
+      { id:'delivery', nome:'Delivery', emoji:'🛵', tipo:'delivery',
+        investimento:'3,30', retorno:'', adesoes:'', lucro_adesoes:'',
+        faturamento_dia:'', faturamento_periodo:'',
+        reservas_feitas:'', receita_garantida:'', total_compras:'1.994,03', pedidos:'14', ticket_medio:'3,29', roi_perc:'-465.9' },
+    ]
+  },
+  // SEMANA 4: 25 fev – 01 mar 2025
+  { label:'25 de fevereiro – 01 de março, 2025',
+    grena_geral:'0.0', grena_sem:'0.0', grena_aval:'0',
+    ifood_geral:'4.5', ifood_sem:'4.7', ifood_aval:'4',
+    google_geral:'4.4', google_sem:'5.0', google_aval:'1',
+    roi:'+835.2', lucro:'7.179,11', investido:'855,52', retorno:'8.034,63',
+    obs:'Aplicar ações específicas no delivery: cupom/desconto – cupom desconto – ganho garantido',
+    campanhas:[
+      { id:'massas', nome:'Festival de Massas, Risotos e Pizzas', emoji:'🍝', tipo:'festival',
+        investimento:'141,02', retorno:'269,70', adesoes:'2', lucro_adesoes:'5',
+        faturamento_dia:'80,09', faturamento_periodo:'41,81',
+        reservas_feitas:'', receita_garantida:'', total_compras:'', pedidos:'', ticket_medio:'', roi_perc:'+46.7' },
+      { id:'peixes', nome:'Festival de Petiscos', emoji:'🍢', tipo:'festival',
+        investimento:'146,60', retorno:'1.666,00', adesoes:'40', lucro_adesoes:'40',
+        faturamento_dia:'46,80', faturamento_periodo:'32,41',
+        reservas_feitas:'', receita_garantida:'', total_compras:'', pedidos:'', ticket_medio:'', roi_perc:'+1201.4' },
+      { id:'aniv', nome:'Campanha de Aniversário', emoji:'🎉', tipo:'aniversario',
+        investimento:'346,09', retorno:'0,00', adesoes:'', lucro_adesoes:'',
+        faturamento_dia:'', faturamento_periodo:'',
+        reservas_feitas:'1', receita_garantida:'5,00', total_compras:'', pedidos:'', ticket_medio:'', roi_perc:'-100.0' },
+      { id:'pagode', nome:'Pagode do Nosso Jeito', emoji:'🎵', tipo:'pagode',
+        investimento:'77,52', retorno:'5.100,00', adesoes:'', lucro_adesoes:'',
+        faturamento_dia:'20.200,48', faturamento_periodo:'',
+        reservas_feitas:'', receita_garantida:'', total_compras:'', pedidos:'', ticket_medio:'', roi_perc:'+475.8' },
+      { id:'delivery', nome:'Delivery', emoji:'🛵', tipo:'delivery',
+        investimento:'3,38', retorno:'', adesoes:'', lucro_adesoes:'',
+        faturamento_dia:'', faturamento_periodo:'',
+        reservas_feitas:'', receita_garantida:'', total_compras:'1.712,58', pedidos:'15', ticket_medio:'3,30', roi_perc:'-465.9' },
+    ]
+  },
+  // SEMANA 5: 02–08 mar 2025
+  { label:'02 – 08 de março, 2025',
+    grena_geral:'3.75', grena_sem:'4.0', grena_aval:'1',
+    ifood_geral:'4.0', ifood_sem:'1.0', ifood_aval:'3',
+    google_geral:'4.4', google_sem:'5.0', google_aval:'4',
+    roi:'+715.4', lucro:'7.385,80', investido:'1.032,40', retorno:'8.418,20',
+    obs:'',
+    campanhas:[
+      { id:'massas', nome:'Festival de Massas, Risotos e Pizzas', emoji:'🍝', tipo:'festival',
+        investimento:'162,00', retorno:'1.381,50', adesoes:'19', lucro_adesoes:'16',
+        faturamento_dia:'82,62', faturamento_periodo:'5,86',
+        reservas_feitas:'', receita_garantida:'', total_compras:'', pedidos:'', ticket_medio:'', roi_perc:'+485.2' },
+      { id:'peixes', nome:'Festival de Petiscos', emoji:'🍢', tipo:'festival',
+        investimento:'173,34', retorno:'2.650,60', adesoes:'40', lucro_adesoes:'42',
+        faturamento_dia:'46,80', faturamento_periodo:'4,18',
+        reservas_feitas:'', receita_garantida:'', total_compras:'', pedidos:'', ticket_medio:'', roi_perc:'+1406.9' },
+      { id:'aniv', nome:'Campanha de Aniversário', emoji:'🎉', tipo:'aniversario',
+        investimento:'386,01', retorno:'0,00', adesoes:'', lucro_adesoes:'',
+        faturamento_dia:'', faturamento_periodo:'',
+        reservas_feitas:'3', receita_garantida:'1,00', total_compras:'', pedidos:'', ticket_medio:'', roi_perc:'-100.0' },
+      { id:'pagode', nome:'Pagode do Nosso Jeito', emoji:'🎵', tipo:'pagode',
+        investimento:'213,30', retorno:'4.030,00', adesoes:'', lucro_adesoes:'',
+        faturamento_dia:'34.665,15', faturamento_periodo:'',
+        reservas_feitas:'', receita_garantida:'', total_compras:'', pedidos:'', ticket_medio:'', roi_perc:'+2076.7' },
+      { id:'delivery', nome:'Delivery', emoji:'🛵', tipo:'delivery',
+        investimento:'4,31', retorno:'', adesoes:'', lucro_adesoes:'',
+        faturamento_dia:'', faturamento_periodo:'',
+        reservas_feitas:'', receita_garantida:'', total_compras:'2.302,34', pedidos:'23', ticket_medio:'4,31', roi_perc:'-465.9' },
+    ]
+  },
+]};
+
+let currentWeek = DB.semanas.length - 1;
+let charts = {};
+
+// ════════════════════════════════
+// RENDER DASHBOARD
+// ════════════════════════════════
+function render() {
+  const s = DB.semanas[currentWeek];
+  document.getElementById('weekLbl').textContent = s.label;
+
+  const simples = ['grena_geral','grena_sem','grena_aval',
+    'ifood_geral','ifood_sem','ifood_aval','ifood_comentarios',
+    'google_geral','google_sem','google_aval','google_comentarios',
+    'roi','lucro','investido','retorno','obs'];
+  simples.forEach(f => {
+    const el = document.getElementById(f);
+    if (el) el.value = s[f] ?? '';
+  });
+
+  // ROI badge
+  const rv = parseFloat((s.roi||'0').replace(',','.'));
+  const b = document.getElementById('roi_badge');
+  b.textContent = rv >= 0 ? `▲ ${s.roi}%` : `▼ ${s.roi}%`;
+  b.className = 'badge ' + (rv >= 0 ? 'pos' : 'neg');
+
+  renderCamps(s);
+}
+
+function renderCamps(s) {
+  const grid = document.getElementById('campGrid');
+  grid.innerHTML = '';
+  s.campanhas.forEach((c, i) => {
+    const rp = parseFloat((c.roi_perc||'0').replace(',','.'));
+    const roiPos = rp >= 0;
+    const div = document.createElement('div');
+    div.className = 'camp-card';
+    div.onclick = () => openModal(i);
+
+    // Campos específicos por tipo
+    let camposHTML = '';
+
+    if (c.tipo === 'festival') {
+      camposHTML = `
+        <div class="crow"><span class="cl">Investimento</span><span class="cv">R$ <input class="e er" value="${c.investimento||''}" style="width:70px" data-f="investimento" data-i="${i}" onclick="e(event)" oninput="uc(this,${i})"/></span></div>
+        <div class="crow"><span class="cl">Retorno</span><span class="cv">R$ <input class="e er" value="${c.retorno||''}" style="width:70px" data-f="retorno" data-i="${i}" onclick="e(event)" oninput="uc(this,${i})"/></span></div>
+        <div class="crow"><span class="cl">Adesões ao Festival</span><span class="cv"><input class="e er" value="${c.adesoes||''}" style="width:40px" data-f="adesoes" data-i="${i}" onclick="e(event)" oninput="uc(this,${i})"/></span></div>
+        <div class="crow"><span class="cl">Faturamento Total Dia</span><span class="cv">R$ <input class="e er" value="${c.faturamento_dia||''}" style="width:70px" data-f="faturamento_dia" data-i="${i}" onclick="e(event)" oninput="uc(this,${i})"/></span></div>`;
+    } else if (c.tipo === 'aniversario') {
+      camposHTML = `
+        <div class="crow"><span class="cl">Investimento</span><span class="cv">R$ <input class="e er" value="${c.investimento||''}" style="width:70px" data-f="investimento" data-i="${i}" onclick="e(event)" oninput="uc(this,${i})"/></span></div>
+        <div class="crow"><span class="cl">Retorno</span><span class="cv">R$ <input class="e er" value="${c.retorno||''}" style="width:70px" data-f="retorno" data-i="${i}" onclick="e(event)" oninput="uc(this,${i})"/></span></div>
+        <div class="crow"><span class="cl">Reservas Feitas</span><span class="cv"><input class="e er" value="${c.reservas_feitas||''}" style="width:40px" data-f="reservas_feitas" data-i="${i}" onclick="e(event)" oninput="uc(this,${i})"/></span></div>
+        <div class="crow"><span class="cl">Receita Garantida</span><span class="cv">R$ <input class="e er" value="${c.receita_garantida||''}" style="width:70px" data-f="receita_garantida" data-i="${i}" onclick="e(event)" oninput="uc(this,${i})"/></span></div>`;
+    } else if (c.tipo === 'pagode') {
+      camposHTML = `
+        <div class="crow"><span class="cl">Investimento</span><span class="cv">R$ <input class="e er" value="${c.investimento||''}" style="width:70px" data-f="investimento" data-i="${i}" onclick="e(event)" oninput="uc(this,${i})"/></span></div>
+        <div class="crow"><span class="cl">Retorno</span><span class="cv">R$ <input class="e er" value="${c.retorno||''}" style="width:70px" data-f="retorno" data-i="${i}" onclick="e(event)" oninput="uc(this,${i})"/></span></div>
+        <div class="crow"><span class="cl">Faturamento Total do Dia</span><span class="cv">R$ <input class="e er" value="${c.faturamento_dia||''}" style="width:80px" data-f="faturamento_dia" data-i="${i}" onclick="e(event)" oninput="uc(this,${i})"/></span></div>`;
+    } else if (c.tipo === 'delivery') {
+      camposHTML = `
+        <div class="crow"><span class="cl">Investimento</span><span class="cv">R$ <input class="e er" value="${c.investimento||''}" style="width:70px" data-f="investimento" data-i="${i}" onclick="e(event)" oninput="uc(this,${i})"/></span></div>
+        <div class="crow"><span class="cl">Total em Compras</span><span class="cv">R$ <input class="e er" value="${c.total_compras||''}" style="width:70px" data-f="total_compras" data-i="${i}" onclick="e(event)" oninput="uc(this,${i})"/></span></div>
+        <div class="crow"><span class="cl">Número de Pedidos</span><span class="cv"><input class="e er" value="${c.pedidos||''}" style="width:40px" data-f="pedidos" data-i="${i}" onclick="e(event)" oninput="uc(this,${i})"/></span></div>
+        <div class="crow"><span class="cl">Ticket Médio</span><span class="cv" style="display:flex;align-items:center;gap:4px">R$ <span id="ticket_calc_${i}" style="font-size:0.78rem;color:var(--pos);font-weight:500">${c.ticket_medio||'—'}</span></span></div>`;
+    }
+
+    div.innerHTML = `
+      <div class="camp-head">
+        <div><div class="camp-emoji">${c.emoji}</div><div class="camp-name">${c.nome}</div></div>
+        <div>
+          <div class="roi-badge ${roiPos?'pos':'neg'}" id="roi_badge_${i}">${c.roi_perc ? c.roi_perc+'%' : '—'}</div>
+        </div>
+      </div>
+      <div class="divider"></div>
+      ${camposHTML}`;
+    grid.appendChild(div);
+  });
+}
+
+// Impede propagação do click nos inputs (não abre modal)
+function e(ev) { ev.stopPropagation(); }
+
+// ════════════════════════════════
+// PARSER de valor BR → float
+// ════════════════════════════════
+function parseBR(v) {
+  if (!v) return 0;
+  // Remove R$, espaços, pontos de milhar e troca vírgula por ponto
+  return parseFloat(v.toString().replace(/R\$\s*/g,'').replace(/\./g,'').replace(',','.')) || 0;
+}
+
+function formatBR(n) {
+  return n.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+}
+
+// ════════════════════════════════
+// CÁLCULOS AUTOMÁTICOS
+// ════════════════════════════════
+
+// 1. ROI de campanha: ((retorno - invest) / invest) * 100
+function calcRoiCamp(inv, ret) {
+  if (!inv || inv === 0) return null;
+  return ((ret - inv) / inv) * 100;
+}
+
+// 2. Ticket médio delivery: compras / pedidos
+function calcTicket(compras, pedidos) {
+  if (!pedidos || pedidos === 0) return null;
+  return compras / pedidos;
+}
+
+// 3. ROI geral: ((retorno - investido) / investido) * 100
+function calcRoiGeral(investido, retorno) {
+  if (!investido || investido === 0) return null;
+  return ((retorno - investido) / investido) * 100;
+}
+
+// Recalcula tudo na semana atual e atualiza UI
+function recalcTudo() {
+  const s = DB.semanas[currentWeek];
+
+  // ── ROI de cada campanha ──
+  s.campanhas.forEach((c, i) => {
+    const inv = parseBR(c.investimento);
+    const ret = parseBR(c.retorno);
+
+    // Ticket médio delivery
+    if (c.tipo === 'delivery') {
+      const compras = parseBR(c.total_compras);
+      const pedidos = parseFloat(c.pedidos) || 0;
+      const ticket  = calcTicket(compras, pedidos);
+      if (ticket !== null) {
+        c.ticket_medio = formatBR(ticket);
+        const el = document.getElementById(`ticket_calc_${i}`);
+        if (el) el.textContent = formatBR(ticket);
+      }
+    }
+
+    // ROI campanha (exceto delivery que não tem retorno direto)
+    if (c.tipo !== 'delivery' && inv > 0 && ret >= 0) {
+      const roi = calcRoiCamp(inv, ret);
+      if (roi !== null) {
+        const roiStr = (roi >= 0 ? '+' : '') + roi.toFixed(1);
+        c.roi_perc = roiStr;
+        const badge = document.getElementById(`roi_badge_${i}`);
+        if (badge) {
+          badge.textContent = roiStr + '%';
+          badge.className = 'roi-badge ' + (roi >= 0 ? 'pos' : 'neg');
+        }
+      }
+    }
+  });
+
+  // ── ROI geral + Lucro ──
+  const investido = parseBR(s.investido);
+  const retorno   = parseBR(s.retorno);
+
+  if (investido > 0 && retorno >= 0) {
+    // Lucro
+    const lucro = retorno - investido;
+    s.lucro = formatBR(lucro);
+    const elLucro = document.getElementById('lucro');
+    if (elLucro) elLucro.value = formatBR(lucro);
+
+    // ROI geral
+    const roi = calcRoiGeral(investido, retorno);
+    if (roi !== null) {
+      const roiStr = (roi >= 0 ? '+' : '') + roi.toFixed(1);
+      s.roi = roiStr;
+      const elRoi = document.getElementById('roi');
+      if (elRoi) elRoi.value = roiStr;
+
+      // Badge ROI
+      const badge = document.getElementById('roi_badge');
+      if (badge) {
+        badge.textContent = (roi >= 0 ? '▲ ' : '▼ ') + roiStr + '%';
+        badge.className = 'badge ' + (roi >= 0 ? 'pos' : 'neg');
+      }
+    }
+  }
+}
+
+// Atualiza campo da campanha e recalcula
+function uc(el, i) {
+  DB.semanas[currentWeek].campanhas[i][el.dataset.f] = el.value;
+  recalcTudo();
+}
+
+// Auto-salva campos simples e recalcula
+document.addEventListener('input', ev => {
+  const el = ev.target;
+  if (!el.classList.contains('e') || el.dataset.i !== undefined) return;
+  const s = DB.semanas[currentWeek];
+  if (el.id && el.id in s) s[el.id] = el.value;
+  // Recalcula se mudou investido ou retorno
+  if (el.id === 'investido' || el.id === 'retorno') recalcTudo();
+});
+
+// ════════════════════════════════
+// SEMANAS
+// ════════════════════════════════
+function changeWeek(d) {
+  const n = currentWeek + d;
+  if (n < 0 || n >= DB.semanas.length) return;
+  currentWeek = n;
+  render();
+}
+
+function newWeek() {
+  DB.semanas.push(semanaVazia());
+  currentWeek = DB.semanas.length - 1;
+  render();
+  toast('Nova semana criada!');
+}
+
+function deleteWeek() {
+  if (DB.semanas.length <= 1) { toast('Não é possível excluir a única semana.'); return; }
+  if (!confirm('Excluir esta semana permanentemente?')) return;
+  DB.semanas.splice(currentWeek, 1);
+  currentWeek = Math.max(0, currentWeek - 1);
+  render();
+  toast('Semana excluída.');
+}
+
+// ════════════════════════════════
+// NAVEGAÇÃO
+// ════════════════════════════════
+function showPage(id, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  if (el) el.classList.add('active');
+  if (id === 'graficos') renderGraficos();
+  if (id === 'metricas') renderMetricas();
+}
+
+// ════════════════════════════════
+// MODAL HISTÓRICO POR CAMPANHA
+// ════════════════════════════════
+let mChart = null;
+function openModal(ci) {
+  const c0 = DB.semanas[0].campanhas[ci];
+  document.getElementById('modalTtl').textContent = c0.emoji + ' ' + c0.nome + ' — Histórico';
+
+  const labels = DB.semanas.map((s,i) => s.label ? s.label.substring(0,8) : 'S'+(i+1));
+  const inv = DB.semanas.map(s => pv(s.campanhas[ci]?.investimento));
+  const ret = DB.semanas.map(s => pv(s.campanhas[ci]?.retorno));
+
+  if (mChart) mChart.destroy();
+  mChart = new Chart(document.getElementById('chartModal'), {
+    type:'bar',
+    data:{ labels, datasets:[
+      {label:'Investimento',data:inv,backgroundColor:'rgba(192,57,43,0.45)',borderColor:'#c0392b',borderWidth:1.5,borderRadius:4},
+      {label:'Retorno',data:ret,backgroundColor:'rgba(92,107,74,0.45)',borderColor:'#5c6b4a',borderWidth:1.5,borderRadius:4},
+    ]},
+    options: cOpts()
+  });
+
+  let html = `<table class="mt"><thead><tr>
+    <th>Semana</th><th>Investimento</th><th>Retorno</th><th>Adesões</th><th>ROI</th>
+  </tr></thead><tbody>`;
+  DB.semanas.forEach((s,i) => {
+    const c = s.campanhas[ci];
+    const rv = parseFloat((c?.roi_perc||'0').replace(',','.'));
+    html += `<tr>
+      <td style="font-size:0.7rem;color:var(--muted)">${s.label||'Semana '+(i+1)}</td>
+      <td>${c?.investimento ? 'R$ '+c.investimento : '—'}</td>
+      <td>${c?.retorno ? 'R$ '+c.retorno : '—'}</td>
+      <td>${c?.adesoes||'—'}</td>
+      <td><span class="badge ${rv>=0?'pos':'neg'}" style="font-size:0.68rem">${c?.roi_perc||'—'}%</span></td>
+    </tr>`;
+  });
+  html += '</tbody></table>';
+  document.getElementById('modalTable').innerHTML = html;
+  document.getElementById('overlay').classList.add('show');
+}
+
+function closeModal(ev) {
+  if (ev && ev.target !== document.getElementById('overlay')) return;
+  document.getElementById('overlay').classList.remove('show');
+}
+
+// ════════════════════════════════
+// GRÁFICOS
+// ════════════════════════════════
+function pv(v) { return parseFloat((v||'0').toString().replace(/\./g,'').replace(',','.')) || 0; }
+
+function cOpts() {
+  return {
+    responsive:true, maintainAspectRatio:false,
+    plugins:{legend:{labels:{font:{family:'Outfit',size:11},color:'#8a8a7e'}}},
+    scales:{
+      x:{ticks:{font:{family:'Outfit',size:10},color:'#8a8a7e'},grid:{color:'rgba(0,0,0,0.04)'}},
+      y:{ticks:{font:{family:'Outfit',size:10},color:'#8a8a7e'},grid:{color:'rgba(0,0,0,0.04)'}}
+    }
+  };
+}
+
+function renderGraficos() {
+  const labels = DB.semanas.map((s,i) => s.label ? s.label.substring(0,8)+'…' : 'S'+(i+1));
+  const inv    = DB.semanas.map(s => pv(s.investido));
+  const fat    = DB.semanas.map(s => pv(s.retorno));
+  const roi    = DB.semanas.map(s => parseFloat((s.roi||'0').replace(',','.')));
+  const adesoes= DB.semanas.map(s => s.campanhas.reduce((sum,c) => sum + (parseFloat(c.adesoes)||0), 0));
+  const grena  = DB.semanas.map(s => parseFloat(s.grena_sem)||0);
+  const ifood  = DB.semanas.map(s => parseFloat(s.ifood_sem)||0);
+  const google = DB.semanas.map(s => parseFloat(s.google_sem)||0);
+
+  const mk = (id, cfg) => { if (charts[id]) charts[id].destroy(); charts[id] = new Chart(document.getElementById(id), cfg); };
+
+  mk('cCF',{type:'bar',data:{labels,datasets:[
+    {label:'Investido',data:inv,backgroundColor:'rgba(192,57,43,0.45)',borderColor:'#c0392b',borderWidth:1.5,borderRadius:4},
+    {label:'Retorno/Fat.',data:fat,backgroundColor:'rgba(92,107,74,0.45)',borderColor:'#5c6b4a',borderWidth:1.5,borderRadius:4},
+  ]},options:cOpts()});
+
+  mk('cROI',{type:'line',data:{labels,datasets:[
+    {label:'ROI %',data:roi,borderColor:'#5c6b4a',backgroundColor:'rgba(92,107,74,0.08)',tension:0.4,fill:true,pointBackgroundColor:'#5c6b4a',pointRadius:5}
+  ]},options:cOpts()});
+
+  mk('cAdes',{type:'bar',data:{labels,datasets:[
+    {label:'Adesões Totais',data:adesoes,backgroundColor:'rgba(92,107,74,0.45)',borderColor:'#5c6b4a',borderWidth:1.5,borderRadius:4}
+  ]},options:cOpts()});
+
+  mk('cNotas',{type:'line',data:{labels,datasets:[
+    {label:'Grená', data:grena, borderColor:'#9b2335',backgroundColor:'transparent',tension:0.4,pointRadius:4},
+    {label:'iFood', data:ifood, borderColor:'#ea1d2c',backgroundColor:'transparent',tension:0.4,pointRadius:4},
+    {label:'Google',data:google,borderColor:'#4285f4',backgroundColor:'transparent',tension:0.4,pointRadius:4},
+  ]},options:{...cOpts(),scales:{...cOpts().scales,y:{...cOpts().scales.y,min:0,max:6}}}});
+}
+
+function renderMetricas() {
+  const body = document.getElementById('metricBody');
+  body.innerHTML = '';
+  DB.semanas.forEach((s,i) => {
+    const rv = parseFloat((s.roi||'0').replace(',','.'));
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td style="font-size:0.72rem;color:var(--muted)">${s.label||'Semana '+(i+1)}</td>
+      <td><span class="badge ${rv>=0?'pos':'neg'}" style="font-size:0.68rem">${s.roi||'—'}%</span></td>
+      <td>${s.investido ? 'R$ '+s.investido : '—'}</td>
+      <td>${s.retorno ? 'R$ '+s.retorno : '—'}</td>
+      <td>${s.lucro ? 'R$ '+s.lucro : '—'}</td>
+      <td>${s.grena_sem||'—'}</td>
+      <td>${s.ifood_sem||'—'}</td>
+      <td>${s.google_sem||'—'}</td>`;
+    body.appendChild(tr);
+  });
+}
+
+// ════════════════════════════════
+// EXPORTAR / IMPORTAR
+// ════════════════════════════════
+function exportarJSON() {
+  const blob = new Blob([JSON.stringify(DB,null,2)],{type:'application/json'});
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url; a.download = 'aura-dados.json'; a.click();
+  URL.revokeObjectURL(url);
+  toast('Dados exportados! Salve no Google Drive.');
+}
+
+function importarJSON(ev) {
+  const file = ev.target.files[0]; if (!file) return;
+  const r = new FileReader();
+  r.onload = e => {
+    try {
+      DB = JSON.parse(e.target.result);
+      currentWeek = DB.semanas.length - 1;
+      render();
+      toast('Dados importados com sucesso!');
+    } catch { toast('Erro ao ler o arquivo JSON.'); }
+  };
+  r.readAsText(file);
+  ev.target.value = '';
+}
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  document.getElementById('toastMsg').textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3200);
+}
+
+// INIT
+render();
+recalcTudo();
+</script>
+</body>
+</html>
