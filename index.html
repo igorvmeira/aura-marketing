@@ -430,161 +430,11 @@ function semanaVazia() {
   };
 }
 
-// ════ DADOS REAIS DOS PRINTS ════
-let DB = { semanas: [
-  // SEMANA 1: 02–08 fev 2025
-  { label:'02 – 08 de fevereiro, 2025',
-    grena_geral:'4.2', grena_sem:'4.2', grena_aval:'4',
-    ifood_geral:'4.2', ifood_sem:'',    ifood_aval:'1',
-    google_geral:'4.4',google_sem:'4.8',google_aval:'0',
-    roi:'+571.5', lucro:'5.298,55', investido:'927,11', retorno:'8.225,70',
-    obs:'',
-    campanhas:[
-      { id:'massas',   nome:'Festival de Massas, Risotos e Pizzas', emoji:'🍝', tipo:'festival',
-        investimento:'136,01', retorno:'139,20', adesoes:'4', lucro_adesoes:'4',
-        faturamento_dia:'109,80', faturamento_periodo:'126,20',
-        reservas_feitas:'', receita_garantida:'', total_compras:'', pedidos:'', ticket_medio:'', roi_perc:'+214.9' },
-      { id:'peixes',   nome:'Festival de Petiscos', emoji:'🍢', tipo:'festival',
-        investimento:'147,17', retorno:'946,10', adesoes:'19', lucro_adesoes:'15',
-        faturamento_dia:'45,80', faturamento_periodo:'57,18',
-        reservas_feitas:'', receita_garantida:'', total_compras:'', pedidos:'', ticket_medio:'', roi_perc:'+241.5' },
-      { id:'aniv',     nome:'Campanha de Aniversário', emoji:'🎉', tipo:'aniversario',
-        investimento:'347,19', retorno:'0,00', adesoes:'', lucro_adesoes:'',
-        faturamento_dia:'', faturamento_periodo:'',
-        reservas_feitas:'', receita_garantida:'', total_compras:'', pedidos:'', ticket_medio:'', roi_perc:'-100.0' },
-      { id:'pagode',   nome:'Pagode do Nosso Jeito', emoji:'🎵', tipo:'pagode',
-        investimento:'136,31', retorno:'3.600,00', adesoes:'', lucro_adesoes:'',
-        faturamento_dia:'32.753,00', faturamento_periodo:'',
-        reservas_feitas:'', receita_garantida:'', total_compras:'', pedidos:'', ticket_medio:'', roi_perc:'+719.4' },
-      { id:'delivery', nome:'Delivery', emoji:'🛵', tipo:'delivery',
-        investimento:'2,32', retorno:'', adesoes:'', lucro_adesoes:'',
-        faturamento_dia:'', faturamento_periodo:'',
-        reservas_feitas:'', receita_garantida:'', total_compras:'1.649,54', pedidos:'17', ticket_medio:'3,32', roi_perc:'-465.9' },
-    ]
-  },
-  // SEMANA 2: 06–12 fev 2025
-  { label:'06 – 12 de fevereiro, 2025',
-    grena_geral:'4.2', grena_sem:'4.2', grena_aval:'2',
-    ifood_geral:'4.3', ifood_sem:'5.0', ifood_aval:'4',
-    google_geral:'6.0', google_sem:'',  google_aval:'0',
-    roi:'+178.6', lucro:'1.404,75', investido:'789,71', retorno:'2.191,50',
-    obs:'',
-    campanhas:[
-      { id:'massas', nome:'Festival de Massas, Risotos e Pizzas', emoji:'🍝', tipo:'festival',
-        investimento:'142,24', retorno:'1.782,30', adesoes:'25', lucro_adesoes:'21',
-        faturamento_dia:'71,80', faturamento_periodo:'8,80',
-        reservas_feitas:'', receita_garantida:'', total_compras:'', pedidos:'', ticket_medio:'', roi_perc:'+1152.2' },
-      { id:'peixes', nome:'Festival de Petiscos', emoji:'🍢', tipo:'festival',
-        investimento:'146,25', retorno:'399,20', adesoes:'9', lucro_adesoes:'7',
-        faturamento_dia:'11,50', faturamento_periodo:'15,50',
-        reservas_feitas:'', receita_garantida:'', total_compras:'', pedidos:'', ticket_medio:'', roi_perc:'+173.2' },
-      { id:'aniv', nome:'Campanha de Aniversário', emoji:'🎉', tipo:'aniversario',
-        investimento:'341,45', retorno:'0,00', adesoes:'', lucro_adesoes:'',
-        faturamento_dia:'', faturamento_periodo:'',
-        reservas_feitas:'', receita_garantida:'', total_compras:'', pedidos:'', ticket_medio:'', roi_perc:'-100.0' },
-      { id:'pagode', nome:'Pagode do Nosso Jeito', emoji:'🎵', tipo:'pagode',
-        investimento:'0,00', retorno:'0,00', adesoes:'', lucro_adesoes:'',
-        faturamento_dia:'0,00', faturamento_periodo:'',
-        reservas_feitas:'', receita_garantida:'', total_compras:'', pedidos:'', ticket_medio:'', roi_perc:'-4.2' },
-      { id:'delivery', nome:'Delivery', emoji:'🛵', tipo:'delivery',
-        investimento:'3,41', retorno:'', adesoes:'', lucro_adesoes:'',
-        faturamento_dia:'', faturamento_periodo:'',
-        reservas_feitas:'', receita_garantida:'', total_compras:'2.058,62', pedidos:'', ticket_medio:'2,41', roi_perc:'-465.9' },
-    ]
-  },
-  // SEMANA 3: 16–22 fev 2025
-  { label:'16 – 22 de fevereiro, 2025',
-    grena_geral:'4.07', grena_sem:'4.07', grena_aval:'3',
-    ifood_geral:'4.6', ifood_sem:'3.7', ifood_aval:'3',
-    google_geral:'4.4', google_sem:'4.4', google_aval:'1',
-    roi:'+857.7', lucro:'5.377,81', investido:'817,89', retorno:'6.195,50',
-    obs:'',
-    campanhas:[
-      { id:'massas', nome:'Festival de Massas, Risotos e Pizzas', emoji:'🍝', tipo:'festival',
-        investimento:'144,14', retorno:'1.997,10', adesoes:'26', lucro_adesoes:'26',
-        faturamento_dia:'87,15', faturamento_periodo:'8,10',
-        reservas_feitas:'', receita_garantida:'', total_compras:'', pedidos:'', ticket_medio:'', roi_perc:'+1325.2' },
-      { id:'peixes', nome:'Festival de Petiscos', emoji:'🍢', tipo:'festival',
-        investimento:'141,40', retorno:'516,90', adesoes:'11', lucro_adesoes:'11',
-        faturamento_dia:'46,80', faturamento_periodo:'12,58',
-        reservas_feitas:'', receita_garantida:'', total_compras:'', pedidos:'', ticket_medio:'', roi_perc:'+265.3' },
-      { id:'aniv', nome:'Campanha de Aniversário', emoji:'🎉', tipo:'aniversario',
-        investimento:'351,79', retorno:'0,00', adesoes:'', lucro_adesoes:'',
-        faturamento_dia:'', faturamento_periodo:'',
-        reservas_feitas:'1', receita_garantida:'5,00', total_compras:'', pedidos:'', ticket_medio:'', roi_perc:'-100.0' },
-      { id:'pagode', nome:'Pagode do Nosso Jeito', emoji:'🎵', tipo:'pagode',
-        investimento:'22,76', retorno:'3.368,00', adesoes:'', lucro_adesoes:'',
-        faturamento_dia:'27.150,17', faturamento_periodo:'',
-        reservas_feitas:'', receita_garantida:'', total_compras:'', pedidos:'', ticket_medio:'', roi_perc:'+4622.7' },
-      { id:'delivery', nome:'Delivery', emoji:'🛵', tipo:'delivery',
-        investimento:'3,30', retorno:'', adesoes:'', lucro_adesoes:'',
-        faturamento_dia:'', faturamento_periodo:'',
-        reservas_feitas:'', receita_garantida:'', total_compras:'1.994,03', pedidos:'14', ticket_medio:'3,29', roi_perc:'-465.9' },
-    ]
-  },
-  // SEMANA 4: 25 fev – 01 mar 2025
-  { label:'25 de fevereiro – 01 de março, 2025',
-    grena_geral:'0.0', grena_sem:'0.0', grena_aval:'0',
-    ifood_geral:'4.5', ifood_sem:'4.7', ifood_aval:'4',
-    google_geral:'4.4', google_sem:'5.0', google_aval:'1',
-    roi:'+835.2', lucro:'7.179,11', investido:'855,52', retorno:'8.034,63',
-    obs:'Aplicar ações específicas no delivery: cupom/desconto – cupom desconto – ganho garantido',
-    campanhas:[
-      { id:'massas', nome:'Festival de Massas, Risotos e Pizzas', emoji:'🍝', tipo:'festival',
-        investimento:'141,02', retorno:'269,70', adesoes:'2', lucro_adesoes:'5',
-        faturamento_dia:'80,09', faturamento_periodo:'41,81',
-        reservas_feitas:'', receita_garantida:'', total_compras:'', pedidos:'', ticket_medio:'', roi_perc:'+46.7' },
-      { id:'peixes', nome:'Festival de Petiscos', emoji:'🍢', tipo:'festival',
-        investimento:'146,60', retorno:'1.666,00', adesoes:'40', lucro_adesoes:'40',
-        faturamento_dia:'46,80', faturamento_periodo:'32,41',
-        reservas_feitas:'', receita_garantida:'', total_compras:'', pedidos:'', ticket_medio:'', roi_perc:'+1201.4' },
-      { id:'aniv', nome:'Campanha de Aniversário', emoji:'🎉', tipo:'aniversario',
-        investimento:'346,09', retorno:'0,00', adesoes:'', lucro_adesoes:'',
-        faturamento_dia:'', faturamento_periodo:'',
-        reservas_feitas:'1', receita_garantida:'5,00', total_compras:'', pedidos:'', ticket_medio:'', roi_perc:'-100.0' },
-      { id:'pagode', nome:'Pagode do Nosso Jeito', emoji:'🎵', tipo:'pagode',
-        investimento:'77,52', retorno:'5.100,00', adesoes:'', lucro_adesoes:'',
-        faturamento_dia:'20.200,48', faturamento_periodo:'',
-        reservas_feitas:'', receita_garantida:'', total_compras:'', pedidos:'', ticket_medio:'', roi_perc:'+475.8' },
-      { id:'delivery', nome:'Delivery', emoji:'🛵', tipo:'delivery',
-        investimento:'3,38', retorno:'', adesoes:'', lucro_adesoes:'',
-        faturamento_dia:'', faturamento_periodo:'',
-        reservas_feitas:'', receita_garantida:'', total_compras:'1.712,58', pedidos:'15', ticket_medio:'3,30', roi_perc:'-465.9' },
-    ]
-  },
-  // SEMANA 5: 02–08 mar 2025
-  { label:'02 – 08 de março, 2025',
-    grena_geral:'3.75', grena_sem:'4.0', grena_aval:'1',
-    ifood_geral:'4.0', ifood_sem:'1.0', ifood_aval:'3',
-    google_geral:'4.4', google_sem:'5.0', google_aval:'4',
-    roi:'+715.4', lucro:'7.385,80', investido:'1.032,40', retorno:'8.418,20',
-    obs:'',
-    campanhas:[
-      { id:'massas', nome:'Festival de Massas, Risotos e Pizzas', emoji:'🍝', tipo:'festival',
-        investimento:'162,00', retorno:'1.381,50', adesoes:'19', lucro_adesoes:'16',
-        faturamento_dia:'82,62', faturamento_periodo:'5,86',
-        reservas_feitas:'', receita_garantida:'', total_compras:'', pedidos:'', ticket_medio:'', roi_perc:'+485.2' },
-      { id:'peixes', nome:'Festival de Petiscos', emoji:'🍢', tipo:'festival',
-        investimento:'173,34', retorno:'2.650,60', adesoes:'40', lucro_adesoes:'42',
-        faturamento_dia:'46,80', faturamento_periodo:'4,18',
-        reservas_feitas:'', receita_garantida:'', total_compras:'', pedidos:'', ticket_medio:'', roi_perc:'+1406.9' },
-      { id:'aniv', nome:'Campanha de Aniversário', emoji:'🎉', tipo:'aniversario',
-        investimento:'386,01', retorno:'0,00', adesoes:'', lucro_adesoes:'',
-        faturamento_dia:'', faturamento_periodo:'',
-        reservas_feitas:'3', receita_garantida:'1,00', total_compras:'', pedidos:'', ticket_medio:'', roi_perc:'-100.0' },
-      { id:'pagode', nome:'Pagode do Nosso Jeito', emoji:'🎵', tipo:'pagode',
-        investimento:'213,30', retorno:'4.030,00', adesoes:'', lucro_adesoes:'',
-        faturamento_dia:'34.665,15', faturamento_periodo:'',
-        reservas_feitas:'', receita_garantida:'', total_compras:'', pedidos:'', ticket_medio:'', roi_perc:'+2076.7' },
-      { id:'delivery', nome:'Delivery', emoji:'🛵', tipo:'delivery',
-        investimento:'4,31', retorno:'', adesoes:'', lucro_adesoes:'',
-        faturamento_dia:'', faturamento_periodo:'',
-        reservas_feitas:'', receita_garantida:'', total_compras:'2.302,34', pedidos:'23', ticket_medio:'4,31', roi_perc:'-465.9' },
-    ]
-  },
-]};
+// ════ BANCO DE DADOS — carregado do Firebase ════
+// Estrutura inicial vazia (dados reais vêm do Firebase)
+let DB = { semanas: [] };
 
-let currentWeek = DB.semanas.length - 1;
+let currentWeek = 0;
 let charts = {};
 
 // ════════════════════════════════
@@ -1003,6 +853,9 @@ function setSyncStatus(status) {
   } else if (status === 'saving') {
     dot.style.background = '#f4b942';
     msg.textContent = 'Salvando...';
+  } else if (status === 'pendente') {
+    dot.style.background = '#f4b942';
+    msg.textContent = 'Salvar em 3 min...';
   } else if (status === 'error') {
     dot.style.background = '#e05c5c';
     msg.textContent = 'Erro ao salvar';
@@ -1026,12 +879,12 @@ async function salvarNuvem() {
   }
 }
 
-// Auto-save 2s após última edição
+// Auto-save a cada 3 minutos após última edição
 let saveTimer = null;
 function autoSave() {
   clearTimeout(saveTimer);
-  setSyncStatus('saving');
-  saveTimer = setTimeout(() => salvarNuvem(), 2000);
+  setSyncStatus('pendente');
+  saveTimer = setTimeout(() => salvarNuvem(), 3 * 60 * 1000); // 3 minutos
 }
 
 // Sobrescreve render para disparar auto-save
