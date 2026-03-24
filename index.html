@@ -263,12 +263,12 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;font
           <div class="kpi-val">R$&nbsp;<input class="e" id="lucro" value="" style="width:95px;color:var(--pos)" readonly tabindex="-1"/></div>
         </div>
         <div class="kpi-card">
-          <div class="kpi-lbl">Total Investido</div>
-          <div class="kpi-val">R$&nbsp;<input class="e" id="investido" value="" style="width:95px"/></div>
+          <div class="kpi-lbl">Total Investido <span style="font-size:0.55rem;color:var(--pos);letter-spacing:.05em">AUTO</span></div>
+          <div class="kpi-val">R$&nbsp;<input class="e" id="investido" value="" style="width:95px;color:var(--muted)" readonly tabindex="-1"/></div>
         </div>
         <div class="kpi-card">
-          <div class="kpi-lbl">Retorno Total</div>
-          <div class="kpi-val">R$&nbsp;<input class="e" id="retorno" value="" style="width:95px"/></div>
+          <div class="kpi-lbl">Retorno Total <span style="font-size:0.55rem;color:var(--pos);letter-spacing:.05em">AUTO</span></div>
+          <div class="kpi-val">R$&nbsp;<input class="e" id="retorno" value="" style="width:95px;color:var(--muted)" readonly tabindex="-1"/></div>
         </div>
       </div>
 
@@ -705,24 +705,35 @@ function calcRoiGeral(investido, retorno) {
 function recalcTudo() {
   const s = DB.semanas[currentWeek];
 
-  // ── ROI de cada campanha ──
+  // ── ROI de cada campanha + acumula totais ──
+  let totalInvestido = 0;
+  let totalRetorno   = 0;
+
   s.campanhas.forEach((c, i) => {
     const inv = parseBR(c.investimento);
     const ret = parseBR(c.retorno);
 
-    // Ticket médio delivery
+    // Soma investimento de todas as campanhas
+    totalInvestido += inv;
+
+    // Soma retorno (delivery usa total_compras como retorno)
     if (c.tipo === 'delivery') {
       const compras = parseBR(c.total_compras);
       const pedidos = parseFloat(c.pedidos) || 0;
-      const ticket  = calcTicket(compras, pedidos);
+      totalRetorno += compras;
+
+      // Ticket médio
+      const ticket = calcTicket(compras, pedidos);
       if (ticket !== null) {
         c.ticket_medio = formatBR(ticket);
         const el = document.getElementById(`ticket_calc_${i}`);
         if (el) el.textContent = formatBR(ticket);
       }
+    } else {
+      totalRetorno += ret;
     }
 
-    // ROI campanha (exceto delivery que não tem retorno direto)
+    // ROI campanha (exceto delivery)
     if (c.tipo !== 'delivery' && inv > 0 && ret >= 0) {
       const roi = calcRoiCamp(inv, ret);
       if (roi !== null) {
@@ -737,26 +748,33 @@ function recalcTudo() {
     }
   });
 
-  // ── ROI geral + Lucro ──
-  const investido = parseBR(s.investido);
-  const retorno   = parseBR(s.retorno);
+  // ── Atualiza Total Investido e Retorno Total automaticamente ──
+  if (totalInvestido > 0) {
+    s.investido = formatBR(totalInvestido);
+    const elInv = document.getElementById('investido');
+    if (elInv) elInv.value = formatBR(totalInvestido);
+  }
 
-  if (investido > 0 && retorno >= 0) {
-    // Lucro
-    const lucro = retorno - investido;
+  if (totalRetorno > 0) {
+    s.retorno = formatBR(totalRetorno);
+    const elRet = document.getElementById('retorno');
+    if (elRet) elRet.value = formatBR(totalRetorno);
+  }
+
+  // ── Lucro e ROI Geral ──
+  if (totalInvestido > 0) {
+    const lucro = totalRetorno - totalInvestido;
     s.lucro = formatBR(lucro);
     const elLucro = document.getElementById('lucro');
     if (elLucro) elLucro.value = formatBR(lucro);
 
-    // ROI geral
-    const roi = calcRoiGeral(investido, retorno);
+    const roi = calcRoiGeral(totalInvestido, totalRetorno);
     if (roi !== null) {
       const roiStr = (roi >= 0 ? '+' : '') + roi.toFixed(1);
       s.roi = roiStr;
       const elRoi = document.getElementById('roi');
       if (elRoi) elRoi.value = roiStr;
 
-      // Badge ROI
       const badge = document.getElementById('roi_badge');
       if (badge) {
         badge.textContent = (roi >= 0 ? '▲ ' : '▼ ') + roiStr + '%';
