@@ -476,11 +476,18 @@ function renderCamps(s) {
     let camposHTML = '';
 
     if (c.tipo === 'festival') {
+      const fatDia = parseBR(c.faturamento_dia);
+      const ret    = parseBR(c.retorno);
+      const pctFat = (fatDia > 0 && ret > 0) ? ((ret / fatDia) * 100).toFixed(1) : null;
       camposHTML = `
         <div class="crow"><span class="cl">Investimento</span><span class="cv">R$ <input class="e er" value="${c.investimento||''}" style="width:70px" data-f="investimento" data-i="${i}" onclick="e(event)" oninput="uc(this,${i})"/></span></div>
         <div class="crow"><span class="cl">Retorno</span><span class="cv">R$ <input class="e er" value="${c.retorno||''}" style="width:70px" data-f="retorno" data-i="${i}" onclick="e(event)" oninput="uc(this,${i})"/></span></div>
         <div class="crow"><span class="cl">Adesões ao Festival</span><span class="cv"><input class="e er" value="${c.adesoes||''}" style="width:40px" data-f="adesoes" data-i="${i}" onclick="e(event)" oninput="uc(this,${i})"/></span></div>
-        <div class="crow"><span class="cl">Faturamento Total Dia</span><span class="cv">R$ <input class="e er" value="${c.faturamento_dia||''}" style="width:70px" data-f="faturamento_dia" data-i="${i}" onclick="e(event)" oninput="uc(this,${i})"/></span></div>`;
+        <div class="crow"><span class="cl">Faturamento Total Dia</span><span class="cv">R$ <input class="e er" value="${c.faturamento_dia||''}" style="width:70px" data-f="faturamento_dia" data-i="${i}" onclick="e(event)" oninput="uc(this,${i})"/></span></div>
+        <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
+          <span class="cl">% do fat. vindo do festival</span>
+          <span id="pct_fat_${i}" style="font-size:0.85rem;font-weight:500;color:${pctFat !== null ? 'var(--pos)' : 'var(--muted)'}">${pctFat !== null ? pctFat + '%' : '—'}</span>
+        </div>`;
     } else if (c.tipo === 'aniversario') {
       camposHTML = `
         <div class="crow"><span class="cl">Investimento</span><span class="cv">R$ <input class="e er" value="${c.investimento||''}" style="width:70px" data-f="investimento" data-i="${i}" onclick="e(event)" oninput="uc(this,${i})"/></span></div>
@@ -593,6 +600,22 @@ function recalcTudo() {
         if (badge) {
           badge.textContent = roiStr + '%';
           badge.className = 'roi-badge ' + (roi >= 0 ? 'pos' : 'neg');
+        }
+      }
+    }
+
+    // % do faturamento proveniente do festival
+    if (c.tipo === 'festival') {
+      const fatDia = parseBR(c.faturamento_dia);
+      const elPct  = document.getElementById(`pct_fat_${i}`);
+      if (elPct) {
+        if (fatDia > 0 && ret > 0) {
+          const pct = (ret / fatDia) * 100;
+          elPct.textContent = pct.toFixed(1) + '%';
+          elPct.style.color = pct >= 50 ? 'var(--pos)' : pct >= 25 ? '#f4b942' : 'var(--red)';
+        } else {
+          elPct.textContent = '—';
+          elPct.style.color = 'var(--muted)';
         }
       }
     }
