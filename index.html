@@ -1204,29 +1204,25 @@ function renderRanking() {
 // Força carregamento da agenda do PDF na semana atual
 function carregarAgendaPDF() {
   const s = DB.semanas[currentWeek];
-  const label = (s.label || '').toLowerCase();
+  const label = (s.label || '').toLowerCase().replace(/[–—]/g, '-');
 
-  const mapaSemanaPDF = [
-    { keys: ['01 de março', '01 – 07', '02/03', '01/03'], num: 9  },
-    { keys: ['02 – 08 de março', '03/03', '04/03', '06/03', '07/03', '08/03'], num: 10 },
-    { keys: ['09 – 15 de março', '10/03', '11/03', '12/03', '13/03', '14/03', '15/03'], num: 11 },
-    { keys: ['16 – 22 de março', '16/03', '17/03', '18/03', '19/03', '20/03', '21/03', '22/03'], num: 12 },
-    { keys: ['23 – 29 de março', '24/03', '25/03', '26/03', '27/03', '28/03', '29/03'], num: 13 },
-    { keys: ['30 – 31 de março', '31 de março', '30/03', '31/03'], num: 14 },
-  ];
+  // Extrai o primeiro número do label (dia inicial da semana)
+  const match = label.match(/(\d+)/);
+  const diaInicial = match ? parseInt(match[1]) : null;
+
+  // Verifica se é março
+  const eMarca = label.includes('março') || label.includes('marco');
+  const eFevereiro = label.includes('fevereiro');
 
   let semPDF = null;
-  for (const entry of mapaSemanaPDF) {
-    if (entry.keys.some(k => label.includes(k.toLowerCase()))) {
-      semPDF = entry.num; break;
-    }
-  }
 
-  // Se não achou pelo label, tenta pelo índice da semana
-  const indiceSemana = currentWeek + 1;
-  if (!semPDF) {
-    const porIndice = { 1:9, 2:10, 3:11, 4:12, 5:13, 6:14 };
-    semPDF = porIndice[indiceSemana] || null;
+  if (eMarca && diaInicial !== null) {
+    if (diaInicial <= 1)  semPDF = 9;
+    else if (diaInicial <= 8)  semPDF = 10;
+    else if (diaInicial <= 15) semPDF = 11;
+    else if (diaInicial <= 22) semPDF = 12;
+    else if (diaInicial <= 29) semPDF = 13;
+    else semPDF = 14;
   }
 
   if (semPDF && SHOWS_MARCO_2026[semPDF]) {
@@ -1238,7 +1234,7 @@ function carregarAgendaPDF() {
     autoSave();
     toast('Agenda de março carregada! ✅');
   } else {
-    toast('Nenhuma agenda encontrada para esta semana.');
+    toast('Esta semana não é de março ou não tem agenda. Verifique o período.');
   }
 }
 function importarExcelShows(ev) {
