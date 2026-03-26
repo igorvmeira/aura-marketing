@@ -370,8 +370,7 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;font
     <!-- ═══ SHOWS & BANDAS ═══ -->
     <div class="page" id="page-shows">
 
-      <!-- KPIs do mês inteiro -->
-      <div class="sec">Resumo do Mês — Shows & Bandas</div>
+      <div class="sec" id="shows_kpi_titulo">Resumo — Shows & Bandas</div>
       <div class="shows-kpi-grid">
         <div class="kpi-card">
           <div class="kpi-lbl">Custo Total <span style="font-size:0.55rem;color:var(--pos)">AUTO</span></div>
@@ -392,30 +391,19 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;font
         </div>
       </div>
 
-      <!-- Filtros + Ações -->
+      <!-- Filtros lista + ações -->
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap;justify-content:space-between">
         <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-          <!-- Filtro Visualização -->
           <div style="display:flex;background:var(--surface2);border:1px solid var(--border);border-radius:8px;overflow:hidden">
-            <button id="filtro_mes"    class="filtro-btn filtro-ativo" onclick="setFiltro('mes')">Mês inteiro</button>
-            <button id="filtro_semana" class="filtro-btn"              onclick="setFiltro('semana')">Por semana</button>
-            <button id="filtro_dia"    class="filtro-btn"              onclick="setFiltro('dia')">Por dia</button>
-            <button id="filtro_atracao"class="filtro-btn"              onclick="setFiltro('atracao')">Por atração</button>
+            <button id="filtro_mes"     class="filtro-btn filtro-ativo" onclick="setFiltro('mes')">Mês inteiro</button>
+            <button id="filtro_semana"  class="filtro-btn"              onclick="setFiltro('semana')">Por semana</button>
+            <button id="filtro_dia"     class="filtro-btn"              onclick="setFiltro('dia')">Por dia da semana</button>
+            <button id="filtro_atracao" class="filtro-btn"              onclick="setFiltro('atracao')">Por atração</button>
           </div>
-
-          <!-- Select semana (aparece quando filtro=semana) -->
-          <select id="sel_semana" class="inp-show" style="display:none;width:auto;padding:7px 12px" onchange="renderShows()">
-          </select>
-
-          <!-- Select dia (aparece quando filtro=dia) -->
-          <select id="sel_dia" class="inp-show" style="display:none;width:auto;padding:7px 12px" onchange="renderShows()">
-          </select>
-
-          <!-- Select atração (aparece quando filtro=atracao) -->
-          <select id="sel_atracao" class="inp-show" style="display:none;width:auto;padding:7px 12px" onchange="renderShows()">
-          </select>
+          <select id="sel_semana"  class="inp-show" style="display:none;width:auto;padding:7px 12px" onchange="renderShows()"></select>
+          <select id="sel_dia"     class="inp-show" style="display:none;width:auto;padding:7px 12px" onchange="renderShows()"></select>
+          <select id="sel_atracao" class="inp-show" style="display:none;width:auto;padding:7px 12px" onchange="renderShows()"></select>
         </div>
-
         <div style="display:flex;gap:8px;flex-wrap:wrap">
           <button class="btn btn-primary" onclick="addNoite()">
             <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
@@ -433,14 +421,25 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;font
         </div>
       </div>
 
-      <!-- Lista de noites -->
+      <!-- Gráfico de desempenho -->
+      <div class="sec">Gráfico — Couvert vs Custo</div>
+      <div style="display:flex;gap:8px;margin-bottom:12px">
+        <div style="display:flex;background:var(--surface2);border:1px solid var(--border);border-radius:8px;overflow:hidden">
+          <button id="gchart_mes"    class="filtro-btn filtro-ativo" onclick="setChartPeriodo('mes')">Mensal (por noite)</button>
+          <button id="gchart_semana" class="filtro-btn"              onclick="setChartPeriodo('semana')">Semanal</button>
+          <button id="gchart_dia"    class="filtro-btn"              onclick="setChartPeriodo('dia')">Por dia da semana</button>
+        </div>
+      </div>
+      <div class="chart-card" style="margin-bottom:20px">
+        <div class="chart-wrap" style="height:260px"><canvas id="chartShowsDesempenho"></canvas></div>
+      </div>
+
+      <!-- Lista -->
       <div id="showsList"></div>
 
       <!-- Ranking -->
       <div class="sec" style="margin-top:4px">Ranking de Atrações — Histórico Geral</div>
-      <div class="chart-card">
-        <div id="rankingList"></div>
-      </div>
+      <div class="chart-card"><div id="rankingList"></div></div>
 
     </div><!-- /shows -->
 
@@ -792,7 +791,7 @@ function changeWeek(d) {
   render();
   recalcTudo();
   // Atualiza a aba que estiver aberta
-  if (paginaAtiva === 'shows')    { renderShows(); renderRanking(); }
+  if (paginaAtiva === 'shows')    { renderShows(); renderRanking(); renderChartShows(); }
   if (paginaAtiva === 'graficos') renderGraficos();
   if (paginaAtiva === 'metricas') renderMetricas();
 }
@@ -824,7 +823,7 @@ function showPage(id, el) {
   if (el) el.classList.add('active');
   if (id === 'graficos') renderGraficos();
   if (id === 'metricas') renderMetricas();
-  if (id === 'shows') { renderShows(); renderRanking(); }
+  if (id === 'shows') { renderShows(); renderRanking(); renderChartShows(); }
 }
 
 // ════════════════════════════════
@@ -1011,16 +1010,31 @@ function showsDataSemana() {
   return s.shows;
 }
 
+// Dias da semana em ordem
+const DIAS_SEMANA = ['Segunda','Terça','Quarta','Quinta','Sexta','Sábado','Domingo'];
+
+function getDiaSemana(dataStr) {
+  if (!dataStr) return null;
+  const lower = dataStr.toLowerCase();
+  for (const d of DIAS_SEMANA) {
+    if (lower.includes(d.toLowerCase())) return d;
+  }
+  return null;
+}
+
 let filtroAtivo = 'mes';
+let chartPeriodo = 'mes';
+let chartShowsInst = null;
 
 function setFiltro(f) {
   filtroAtivo = f;
-  document.querySelectorAll('.filtro-btn').forEach(b => b.classList.remove('filtro-ativo'));
+  document.querySelectorAll('.filtro-btn[id^="filtro_"]').forEach(b => b.classList.remove('filtro-ativo'));
   document.getElementById('filtro_' + f).classList.add('filtro-ativo');
   ['sel_semana','sel_dia','sel_atracao'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.style.display = 'none';
   });
+
   if (f === 'semana') {
     const sel = document.getElementById('sel_semana');
     sel.style.display = '';
@@ -1030,8 +1044,7 @@ function setFiltro(f) {
   if (f === 'dia') {
     const sel = document.getElementById('sel_dia');
     sel.style.display = '';
-    const dias = [...new Set(todasAsNoites().map(n => n.data).filter(Boolean))].sort();
-    sel.innerHTML = dias.map(d => `<option value="${d}">${d}</option>`).join('');
+    sel.innerHTML = DIAS_SEMANA.map(d => `<option value="${d}">${d}-feira${d==='Sábado'||d==='Domingo'?'':''}</option>`).join('');
   }
   if (f === 'atracao') {
     const sel = document.getElementById('sel_atracao');
@@ -1040,9 +1053,10 @@ function setFiltro(f) {
     sel.innerHTML = nomes.map(n => `<option value="${n}">${n}</option>`).join('');
   }
   renderShows();
+  renderChartShows();
 }
 
-// Retorna noites filtradas conforme filtro ativo
+// Retorna noites filtradas
 function noitesFiltradas() {
   const todas = todasAsNoites();
   if (filtroAtivo === 'mes')     return todas;
@@ -1051,14 +1065,93 @@ function noitesFiltradas() {
     return todas.filter(n => n._semanaIdx === idx);
   }
   if (filtroAtivo === 'dia') {
-    const dia = document.getElementById('sel_dia')?.value || '';
-    return todas.filter(n => n.data === dia);
+    const diaSelec = document.getElementById('sel_dia')?.value || '';
+    return todas.filter(n => getDiaSemana(n.data) === diaSelec);
   }
   if (filtroAtivo === 'atracao') {
     const atr = document.getElementById('sel_atracao')?.value || '';
     return todas.filter(n => n.bandas.some(b => b.nome === atr));
   }
   return todas;
+}
+
+// ── GRÁFICO DE DESEMPENHO ──
+function setChartPeriodo(p) {
+  chartPeriodo = p;
+  document.querySelectorAll('.filtro-btn[id^="gchart_"]').forEach(b => b.classList.remove('filtro-ativo'));
+  document.getElementById('gchart_' + p).classList.add('filtro-ativo');
+  renderChartShows();
+}
+
+function renderChartShows() {
+  const canvas = document.getElementById('chartShowsDesempenho');
+  if (!canvas) return;
+  if (chartShowsInst) { chartShowsInst.destroy(); chartShowsInst = null; }
+
+  const todas = todasAsNoites();
+  let labels = [], custos = [], couverts = [];
+
+  if (chartPeriodo === 'mes') {
+    // Cada noite como um ponto, ordenado por data
+    const sorted = [...todas].sort((a,b) => (a.data||'').localeCompare(b.data||''));
+    sorted.forEach(n => {
+      let custo = 0;
+      n.bandas.forEach(b => { custo += parseBR(b.cache) + getConsumo(b.nome||''); });
+      labels.push(n.data || '—');
+      custos.push(custo);
+      couverts.push(parseBR(n.couvert));
+    });
+  }
+
+  if (chartPeriodo === 'semana') {
+    // Agrupa por semana
+    DB.semanas.forEach((s, si) => {
+      let custo = 0, couvert = 0;
+      (s.shows || []).forEach(n => {
+        n.bandas.forEach(b => { custo += parseBR(b.cache) + getConsumo(b.nome||''); });
+        couvert += parseBR(n.couvert);
+      });
+      labels.push(s.label ? s.label.substring(0,8)+'…' : `Sem. ${si+1}`);
+      custos.push(custo);
+      couverts.push(couvert);
+    });
+  }
+
+  if (chartPeriodo === 'dia') {
+    // Agrupa pelo dia da semana (Seg, Ter, Qua...) — soma de todas as ocorrências
+    const acum = {};
+    DIAS_SEMANA.forEach(d => { acum[d] = { custo:0, couvert:0 }; });
+    todas.forEach(n => {
+      const dia = getDiaSemana(n.data);
+      if (!dia) return;
+      n.bandas.forEach(b => { acum[dia].custo += parseBR(b.cache) + getConsumo(b.nome||''); });
+      acum[dia].couvert += parseBR(n.couvert);
+    });
+    DIAS_SEMANA.forEach(d => {
+      labels.push(d);
+      custos.push(acum[d].custo);
+      couverts.push(acum[d].couvert);
+    });
+  }
+
+  chartShowsInst = new Chart(canvas, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label:'Custo (Cachê + Consumo)', data:custos,   backgroundColor:'rgba(192,57,43,0.45)',  borderColor:'#c0392b', borderWidth:1.5, borderRadius:4 },
+        { label:'Couvert Arrecadado',      data:couverts, backgroundColor:'rgba(92,107,74,0.5)',   borderColor:'#5c6b4a', borderWidth:1.5, borderRadius:4 },
+      ]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ labels:{ font:{family:'Outfit',size:11}, color:'#8a8a7e' } } },
+      scales:{
+        x:{ ticks:{ font:{family:'Outfit',size:9}, color:'#8a8a7e', maxRotation:45 }, grid:{ color:'rgba(0,0,0,0.04)' } },
+        y:{ ticks:{ font:{family:'Outfit',size:10}, color:'#8a8a7e', callback: v => 'R$ '+formatBR(v) }, grid:{ color:'rgba(0,0,0,0.04)' } }
+      }
+    }
+  });
 }
 
 function addNoite() {
@@ -1113,54 +1206,62 @@ function renderShows() {
   const container = document.getElementById('showsList');
   if (!container) return;
 
+  calcShowsKPIs(noites);
+
   if (noites.length === 0) {
     container.innerHTML = `<div style="text-align:center;padding:40px;color:var(--muted);font-size:0.82rem">Nenhuma noite encontrada para este filtro.</div>`;
-    calcShowsKPIs();
+    renderChartShows();
     return;
   }
 
-  // Agrupa por semana para mostrar separador
   let htmlFinal = '';
-  let semanaAtualLabel = '';
+  let grupoAtual = '';
+  const agruparPor = filtroAtivo === 'dia' ? 'diaSemana' : filtroAtivo === 'mes' ? 'semana' : 'nenhum';
 
   noites.forEach((noite) => {
     const si = noite._semanaIdx;
     const ni = noite._noiteIdx;
+    let grupoLabel = '';
+    if (agruparPor === 'semana')    grupoLabel = noite._semanaLabel;
+    if (agruparPor === 'diaSemana') grupoLabel = getDiaSemana(noite.data) || 'Outros';
 
-    // Cabeçalho de semana (apenas no modo mês)
-    if (filtroAtivo === 'mes' && noite._semanaLabel !== semanaAtualLabel) {
-      semanaAtualLabel = noite._semanaLabel;
-      htmlFinal += `<div class="sec" style="margin-top:${htmlFinal ? '20px' : '0'}">${semanaAtualLabel}</div>`;
+    if (agruparPor !== 'nenhum' && grupoLabel !== grupoAtual) {
+      grupoAtual = grupoLabel;
+      if (agruparPor === 'diaSemana') {
+        const ng = noites.filter(n => getDiaSemana(n.data) === grupoLabel);
+        let gcusto = 0, gcouvert = 0;
+        ng.forEach(n => { n.bandas.forEach(b => { gcusto += parseBR(b.cache) + getConsumo(b.nome||''); }); gcouvert += parseBR(n.couvert); });
+        const glucro = gcouvert - gcusto;
+        htmlFinal += `
+          <div style="margin-top:${htmlFinal?'24px':'0'};margin-bottom:10px;display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+            <div class="sec" style="margin:0;flex:1">${grupoLabel}-feira — ${ng.length} noite${ng.length!==1?'s':''} no mês</div>
+            <span style="font-size:0.75rem;color:var(--muted)">Custo: <b>R$ ${formatBR(gcusto)}</b></span>
+            <span style="font-size:0.75rem;color:var(--muted)">Couvert: <b>R$ ${formatBR(gcouvert)}</b></span>
+            <span style="font-size:0.75rem;font-weight:500;color:${glucro>=0?'var(--pos)':'var(--red)'}">Lucro: R$ ${formatBR(glucro)}</span>
+          </div>`;
+      } else {
+        htmlFinal += `<div class="sec" style="margin-top:${htmlFinal?'20px':'0'}">${grupoLabel}</div>`;
+      }
     }
 
     const bandas = noite.bandas || [];
     let bandasHTML = bandas.map((b, bi) => {
-      const consumo = getConsumo(b.nome || '');
+      const consumo = getConsumo(b.nome||'');
       const especial = Object.keys(CONSUMO_ESPECIAL).find(k => (b.nome||'').toLowerCase().includes(k.toLowerCase()));
-      const cache = parseBR(b.cache);
-      const custoTotal = cache + consumo;
+      const custoTotal = parseBR(b.cache) + consumo;
       return `
         <div class="show-banda-row">
           <div>
             <div class="sb-label">Banda / Artista</div>
-            <input class="inp-show" value="${b.nome||''}" placeholder="Nome da banda"
-              oninput="updateBanda(${si},${ni},${bi},'nome',this.value)"/>
+            <input class="inp-show" value="${b.nome||''}" placeholder="Nome da banda" oninput="updateBanda(${si},${ni},${bi},'nome',this.value)"/>
             ${especial ? `<div class="consumo-especial">⭐ Consumo especial: R$ ${CONSUMO_ESPECIAL[especial]}</div>` : ''}
           </div>
-          <div>
-            <div class="sb-label">Cachê (R$)</div>
-            <input class="inp-show" value="${b.cache||''}" placeholder="0,00" style="text-align:right"
-              oninput="updateBanda(${si},${ni},${bi},'cache',this.value)"/>
+          <div><div class="sb-label">Cachê (R$)</div>
+            <input class="inp-show" value="${b.cache||''}" placeholder="0,00" style="text-align:right" oninput="updateBanda(${si},${ni},${bi},'cache',this.value)"/>
           </div>
-          <div>
-            <div class="sb-label">Consumo</div>
-            <div class="sb-val" style="padding:7px 0">R$ ${consumo.toFixed(2).replace('.',',')}</div>
-          </div>
-          <div>
-            <div class="sb-label">Custo Total</div>
-            <div class="sb-val" style="padding:7px 0;font-weight:500">R$ ${formatBR(custoTotal)}</div>
-          </div>
-          <button class="btn-del-show" onclick="removerBanda(${si},${ni},${bi})" title="Remover">✕</button>
+          <div><div class="sb-label">Consumo</div><div class="sb-val" style="padding:7px 0">R$ ${consumo.toFixed(2).replace('.',',')}</div></div>
+          <div><div class="sb-label">Custo Total</div><div class="sb-val" style="padding:7px 0;font-weight:500">R$ ${formatBR(custoTotal)}</div></div>
+          <button class="btn-del-show" onclick="removerBanda(${si},${ni},${bi})">✕</button>
         </div>`;
     }).join('');
 
@@ -1172,7 +1273,7 @@ function renderShows() {
             <input class="inp-show" value="${noite.data||''}" placeholder="Dia (ex: Sexta-feira, 20/03)"
               style="width:240px;font-weight:500" oninput="updateShow(${si},${ni},'data',this.value)"/>
           </div>
-          <button class="btn-del-show" onclick="removerNoite(${si},${ni})" title="Remover noite">🗑</button>
+          <button class="btn-del-show" onclick="removerNoite(${si},${ni})">🗑</button>
         </div>
         ${bandasHTML}
         <button class="btn btn-ghost" style="margin-top:10px;font-size:0.72rem" onclick="addBanda(${si},${ni})">
@@ -1189,11 +1290,8 @@ function renderShows() {
   });
 
   container.innerHTML = htmlFinal;
-
-  // Renderiza summaries
-  noites.forEach(noite => renderShowsSummary(noite._semanaIdx, noite._noiteIdx));
-
-  calcShowsKPIs();
+  noites.forEach(n => renderShowsSummary(n._semanaIdx, n._noiteIdx));
+  renderChartShows();
   renderRanking();
 }
 
@@ -1219,12 +1317,11 @@ function renderShowsSummary(si, ni) {
     <div class="ss-item"><span class="ss-lbl">Viabilidade</span><span class="ss-val">${lucroPos?'✅ Viável':'⚠️ Prejuízo'}</span></div>`;
 }
 
-function calcShowsKPIs() {
-  // Calcula sobre TODAS as noites (mês inteiro)
-  const todas = todasAsNoites();
+function calcShowsKPIs(noitesList) {
+  const lista = noitesList || todasAsNoites();
   let totalCusto = 0, totalCouvert = 0, totalShows = 0;
-  todas.forEach(noite => {
-    noite.bandas.forEach(b => { totalCusto += parseBR(b.cache) + getConsumo(b.nome || ''); totalShows++; });
+  lista.forEach(noite => {
+    noite.bandas.forEach(b => { totalCusto += parseBR(b.cache) + getConsumo(b.nome||''); totalShows++; });
     totalCouvert += parseBR(noite.couvert);
   });
   const lucro = totalCouvert - totalCusto;
