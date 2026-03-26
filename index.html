@@ -396,6 +396,10 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;font
           <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
           Adicionar noite
         </button>
+        <button class="btn btn-ghost" onclick="carregarAgendaPDF()">
+          <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          Carregar agenda março
+        </button>
         <label class="btn btn-ghost" style="cursor:pointer">
           <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
           Importar Excel
@@ -1197,7 +1201,46 @@ function renderRanking() {
     </div>`).join('');
 }
 
-// Importar Excel com agenda de shows
+// Força carregamento da agenda do PDF na semana atual
+function carregarAgendaPDF() {
+  const s = DB.semanas[currentWeek];
+  const label = (s.label || '').toLowerCase();
+
+  const mapaSemanaPDF = [
+    { keys: ['01 de março', '01 – 07', '02/03', '01/03'], num: 9  },
+    { keys: ['02 – 08 de março', '03/03', '04/03', '06/03', '07/03', '08/03'], num: 10 },
+    { keys: ['09 – 15 de março', '10/03', '11/03', '12/03', '13/03', '14/03', '15/03'], num: 11 },
+    { keys: ['16 – 22 de março', '16/03', '17/03', '18/03', '19/03', '20/03', '21/03', '22/03'], num: 12 },
+    { keys: ['23 – 29 de março', '24/03', '25/03', '26/03', '27/03', '28/03', '29/03'], num: 13 },
+    { keys: ['30 – 31 de março', '31 de março', '30/03', '31/03'], num: 14 },
+  ];
+
+  let semPDF = null;
+  for (const entry of mapaSemanaPDF) {
+    if (entry.keys.some(k => label.includes(k.toLowerCase()))) {
+      semPDF = entry.num; break;
+    }
+  }
+
+  // Se não achou pelo label, tenta pelo índice da semana
+  const indiceSemana = currentWeek + 1;
+  if (!semPDF) {
+    const porIndice = { 1:9, 2:10, 3:11, 4:12, 5:13, 6:14 };
+    semPDF = porIndice[indiceSemana] || null;
+  }
+
+  if (semPDF && SHOWS_MARCO_2026[semPDF]) {
+    if (s.shows && s.shows.length > 0) {
+      if (!confirm('Esta semana já tem noites cadastradas. Substituir pela agenda de março?')) return;
+    }
+    s.shows = JSON.parse(JSON.stringify(SHOWS_MARCO_2026[semPDF]));
+    renderShows();
+    autoSave();
+    toast('Agenda de março carregada! ✅');
+  } else {
+    toast('Nenhuma agenda encontrada para esta semana.');
+  }
+}
 function importarExcelShows(ev) {
   const file = ev.target.files[0]; if (!file) return;
   const reader = new FileReader();
@@ -1380,25 +1423,26 @@ const SHOWS_MARCO_2026 = {
   ],
 };
 
-// Injeta shows nas semanas do DB que ainda não têm shows
+// Injeta shows nas semanas baseado no label da semana
 function injetarShowsNasSemanas() {
-  // Mapeamento de semana do dashboard para número de semana do PDF
-  // Baseado no campo label da semana
-  const mapaSemanaPDF = {
-    '02 – 08 de março': 10,
-    '09 – 15 de março': 11,
-    '16 – 22 de março': 12,
-    '23 – 29 de março': 13,
-    '30': 14,
-    '01': 9,
-  };
+  const mapaSemanaPDF = [
+    { keys: ['01 de março', '01 – 07 de março', '01/03'], num: 9  },
+    { keys: ['02 – 08 de março', '03 – 08 de março', '03/03'], num: 10 },
+    { keys: ['09 – 15 de março', '10 – 15 de março', '10/03'], num: 11 },
+    { keys: ['16 – 22 de março', '17 – 22 de março', '16/03'], num: 12 },
+    { keys: ['23 – 29 de março', '24 – 29 de março', '23/03'], num: 13 },
+    { keys: ['30 – 31 de março', '31 de março', '30/03', '31/03'], num: 14 },
+  ];
 
   DB.semanas.forEach(s => {
-    if (s.shows && s.shows.length > 0) return; // já tem shows, não sobrescreve
-    const label = s.label || '';
+    // Só injeta se ainda não tiver nenhuma noite cadastrada
+    if (s.shows && s.shows.length > 0) return;
+    const label = (s.label || '').toLowerCase();
     let semPDF = null;
-    for (const [key, num] of Object.entries(mapaSemanaPDF)) {
-      if (label.includes(key)) { semPDF = num; break; }
+    for (const entry of mapaSemanaPDF) {
+      if (entry.keys.some(k => label.includes(k.toLowerCase()))) {
+        semPDF = entry.num; break;
+      }
     }
     if (semPDF && SHOWS_MARCO_2026[semPDF]) {
       s.shows = JSON.parse(JSON.stringify(SHOWS_MARCO_2026[semPDF]));
