@@ -40,6 +40,7 @@
   window.dispatchEvent(new Event('firebase-ready'));
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600&display=swap" rel="stylesheet"/>
 <style>
 :root {
@@ -1162,6 +1163,7 @@ function renderChartShows() {
 
   chartShowsInst = new Chart(canvas, {
     type: 'bar',
+    plugins: [ChartDataLabels],
     data: {
       labels,
       datasets: [
@@ -1171,7 +1173,19 @@ function renderChartShows() {
     },
     options: {
       responsive:true, maintainAspectRatio:false,
-      plugins:{ legend:{ labels:{ font:{family:'Outfit',size:11}, color:'#8a8a7e' } } },
+      plugins:{
+        legend:{ labels:{ font:{family:'Outfit',size:11}, color:'#8a8a7e' } },
+        datalabels:{
+          anchor: 'end',
+          align: 'end',
+          offset: 2,
+          font:{ family:'Outfit', size:9, weight:'500' },
+          color: '#5c5c5c',
+          formatter: v => v > 0 ? 'R$\n' + formatBR(v) : '',
+          clip: false,
+        }
+      },
+      layout:{ padding:{ top: 28 } },
       scales:{
         x:{ ticks:{ font:{family:'Outfit',size:9}, color:'#8a8a7e', maxRotation:45 }, grid:{ color:'rgba(0,0,0,0.04)' } },
         y:{ ticks:{ font:{family:'Outfit',size:10}, color:'#8a8a7e', callback: v => 'R$ '+formatBR(v) }, grid:{ color:'rgba(0,0,0,0.04)' } }
@@ -1647,6 +1661,9 @@ function injetarShowsNasSemanas() {
 }
 
 // ── INIT ──
+// Desativa datalabels globalmente — só o gráfico de shows usa explicitamente
+Chart.defaults.plugins.datalabels = { display: false };
+
 function iniciar(dadosNuvem) {
   if (dadosNuvem && dadosNuvem.semanas && dadosNuvem.semanas.length > 0) {
     DB = dadosNuvem;
