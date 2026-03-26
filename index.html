@@ -196,6 +196,21 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;font
 .filtro-btn:hover{color:var(--text);}
 .filtro-ativo{background:var(--surface)!important;color:var(--green)!important;font-weight:500;box-shadow:0 1px 3px rgba(0,0,0,0.08);}
 
+/* DOMINGOS */
+.domingo-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);margin-bottom:14px;}
+.domingo-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
+.domingo-titulo{font-size:0.9rem;font-weight:500;display:flex;align-items:center;gap:8px;}
+.horarios-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px;}
+.horario-item{background:var(--surface2);border-radius:10px;padding:14px;text-align:center;}
+.horario-label{font-size:0.62rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
+.horario-input{width:100%;background:transparent;border:none;border-bottom:1px dashed rgba(0,0,0,0.12);text-align:center;font-family:'Outfit',sans-serif;font-size:1rem;font-weight:400;color:var(--text);outline:none;padding:2px 0;transition:border-color .2s;}
+.horario-input:focus{border-color:var(--green);}
+.horario-total{font-size:0.7rem;color:var(--muted);margin-top:6px;}
+.domingo-resumo{display:flex;gap:20px;padding-top:14px;border-top:1px solid var(--border);flex-wrap:wrap;}
+.dr-item{display:flex;flex-direction:column;gap:2px;}
+.dr-lbl{font-size:0.62rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);}
+.dr-val{font-size:0.88rem;font-weight:500;}
+
 </style>
 </head>
 <body>
@@ -237,6 +252,10 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;font
     <div class="nav-item" onclick="showPage('shows',this)">
       <svg class="nav-ico" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
       Shows & Bandas
+    </div>
+    <div class="nav-item" onclick="showPage('domingos',this)">
+      <svg class="nav-ico" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      Domingos
     </div>
   </nav>
   <div class="sidebar-footer">
@@ -443,6 +462,52 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;font
       <div class="chart-card"><div id="rankingList"></div></div>
 
     </div><!-- /shows -->
+
+    <!-- ═══ DOMINGOS — ANÁLISE POR HORÁRIO ═══ -->
+    <div class="page" id="page-domingos">
+
+      <div class="sec">Análise de Vendas por Horário — Domingos</div>
+
+      <!-- KPIs totais -->
+      <div class="shows-kpi-grid" style="margin-bottom:18px">
+        <div class="kpi-card">
+          <div class="kpi-lbl">17h – 19h <span style="font-size:0.55rem;color:var(--pos)">TOTAL</span></div>
+          <div class="kpi-val" style="font-size:1.4rem">R$&nbsp;<span id="dk_1719">—</span></div>
+          <div style="font-size:0.68rem;color:var(--muted);margin-top:4px">Soma de todos os domingos</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-lbl">19h – 21h <span style="font-size:0.55rem;color:var(--pos)">TOTAL</span></div>
+          <div class="kpi-val" style="font-size:1.4rem">R$&nbsp;<span id="dk_1921">—</span></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-lbl">21h – 23h <span style="font-size:0.55rem;color:var(--pos)">TOTAL</span></div>
+          <div class="kpi-val" style="font-size:1.4rem">R$&nbsp;<span id="dk_2123">—</span></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-lbl">23h – 01h30 <span style="font-size:0.55rem;color:var(--pos)">TOTAL</span></div>
+          <div class="kpi-val" style="font-size:1.4rem">R$&nbsp;<span id="dk_2301">—</span></div>
+        </div>
+      </div>
+
+      <!-- Botão adicionar -->
+      <div style="display:flex;gap:10px;margin-bottom:16px">
+        <button class="btn btn-primary" onclick="addDomingo()">
+          <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Adicionar domingo
+        </button>
+      </div>
+
+      <!-- Gráfico comparativo -->
+      <div class="sec">Evolução por Domingo — Faixas de Horário</div>
+      <div class="chart-card" style="margin-bottom:20px">
+        <div class="chart-wrap" style="height:280px"><canvas id="chartDomingos"></canvas></div>
+      </div>
+
+      <!-- Cards por domingo -->
+      <div class="sec">Domingos Cadastrados</div>
+      <div id="domingosList"></div>
+
+    </div><!-- /domingos -->
 
   </div><!-- /content -->
 </div><!-- /main -->
@@ -793,6 +858,7 @@ function changeWeek(d) {
   recalcTudo();
   // Atualiza a aba que estiver aberta
   if (paginaAtiva === 'shows')    { renderShows(); renderRanking(); renderChartShows(); }
+  if (paginaAtiva === 'domingos') { renderDomingos(); }
   if (paginaAtiva === 'graficos') renderGraficos();
   if (paginaAtiva === 'metricas') renderMetricas();
 }
@@ -824,7 +890,8 @@ function showPage(id, el) {
   if (el) el.classList.add('active');
   if (id === 'graficos') renderGraficos();
   if (id === 'metricas') renderMetricas();
-  if (id === 'shows') { renderShows(); renderRanking(); renderChartShows(); }
+  if (id === 'shows')    { renderShows(); renderRanking(); renderChartShows(); }
+  if (id === 'domingos') { renderDomingos(); }
 }
 
 // ════════════════════════════════
@@ -1484,6 +1551,191 @@ function importarExcelShows(ev) {
   };
   reader.readAsText(file);
   ev.target.value = '';
+}
+
+// ════════════════════════════════
+// ════════════════════════════════
+// DOMINGOS — ANÁLISE POR HORÁRIO
+// ════════════════════════════════
+
+const FAIXAS = [
+  { id:'h1719', label:'17h – 19h'   },
+  { id:'h1921', label:'19h – 21h'   },
+  { id:'h2123', label:'21h – 23h'   },
+  { id:'h2301', label:'23h – 01h30' },
+];
+
+function domingosSemana() {
+  const s = DB.semanas[currentWeek];
+  if (!s.domingos) s.domingos = [];
+  return s.domingos;
+}
+
+function todosDomingos() {
+  const lista = [];
+  DB.semanas.forEach((s, si) => {
+    (s.domingos || []).forEach((d, di) => {
+      lista.push({ ...d, _semanaIdx: si, _domIdx: di });
+    });
+  });
+  // Ordena por data
+  return lista.sort((a, b) => (a.data || '').localeCompare(b.data || ''));
+}
+
+function addDomingo() {
+  const s = DB.semanas[currentWeek];
+  if (!s.domingos) s.domingos = [];
+  s.domingos.push({ id: Date.now(), data: '', h1719:'', h1921:'', h2123:'', h2301:'' });
+  renderDomingos();
+  autoSave();
+}
+
+function removerDomingo(si, di) {
+  DB.semanas[si].domingos.splice(di, 1);
+  renderDomingos();
+  calcDomingosKPIs();
+  autoSave();
+}
+
+function updateDomingo(si, di, field, value) {
+  DB.semanas[si].domingos[di][field] = value;
+  calcDomingosKPIs();
+  renderChartDomingos();
+}
+
+function calcDomingosKPIs() {
+  const todos = todosDomingos();
+  const totais = { h1719:0, h1921:0, h2123:0, h2301:0 };
+  todos.forEach(d => {
+    FAIXAS.forEach(f => { totais[f.id] += parseBR(d[f.id]); });
+  });
+  const setText = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+  setText('dk_1719', totais.h1719 > 0 ? formatBR(totais.h1719) : '—');
+  setText('dk_1921', totais.h1921 > 0 ? formatBR(totais.h1921) : '—');
+  setText('dk_2123', totais.h2123 > 0 ? formatBR(totais.h2123) : '—');
+  setText('dk_2301', totais.h2301 > 0 ? formatBR(totais.h2301) : '—');
+}
+
+let chartDomingosInst = null;
+
+function renderChartDomingos() {
+  const canvas = document.getElementById('chartDomingos');
+  if (!canvas) return;
+  if (chartDomingosInst) { chartDomingosInst.destroy(); chartDomingosInst = null; }
+
+  const todos = todosDomingos();
+  if (todos.length === 0) return;
+
+  const labels = todos.map(d => d.data || '—');
+  const cores = [
+    { bg:'rgba(92,107,74,0.5)',   border:'#5c6b4a' },
+    { bg:'rgba(45,106,79,0.45)',  border:'#2d6a4f' },
+    { bg:'rgba(92,156,224,0.45)', border:'#4285f4' },
+    { bg:'rgba(244,185,66,0.45)', border:'#f4b942' },
+  ];
+
+  chartDomingosInst = new Chart(canvas, {
+    type: 'bar',
+    plugins: [ChartDataLabels],
+    data: {
+      labels,
+      datasets: FAIXAS.map((f, fi) => ({
+        label: f.label,
+        data: todos.map(d => parseBR(d[f.id])),
+        backgroundColor: cores[fi].bg,
+        borderColor: cores[fi].border,
+        borderWidth: 1.5,
+        borderRadius: 4,
+      }))
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { labels: { font:{family:'Outfit',size:11}, color:'#8a8a7e' } },
+        datalabels: {
+          anchor:'end', align:'end', offset:2,
+          font:{ family:'Outfit', size:8, weight:'500' },
+          color:'#5c5c5c',
+          formatter: v => v > 0 ? 'R$\n'+formatBR(v) : '',
+          clip: false,
+        }
+      },
+      layout: { padding:{ top:30 } },
+      scales: {
+        x: { ticks:{ font:{family:'Outfit',size:9}, color:'#8a8a7e' }, grid:{ color:'rgba(0,0,0,0.04)' } },
+        y: { ticks:{ font:{family:'Outfit',size:10}, color:'#8a8a7e', callback: v => 'R$ '+formatBR(v) }, grid:{ color:'rgba(0,0,0,0.04)' } }
+      }
+    }
+  });
+}
+
+function renderDomingos() {
+  const todos = todosDomingos();
+  const container = document.getElementById('domingosList');
+  if (!container) return;
+
+  calcDomingosKPIs();
+
+  if (todos.length === 0) {
+    container.innerHTML = `<div style="text-align:center;padding:40px;color:var(--muted);font-size:0.82rem">Nenhum domingo cadastrado. Clique em "Adicionar domingo" para começar.</div>`;
+    renderChartDomingos();
+    return;
+  }
+
+  container.innerHTML = todos.map(d => {
+    const si = d._semanaIdx;
+    const di = d._domIdx;
+    const total = FAIXAS.reduce((s, f) => s + parseBR(d[f.id]), 0);
+    const melhor = FAIXAS.reduce((best, f) => parseBR(d[f.id]) > parseBR(d[best.id]) ? f : best, FAIXAS[0]);
+    const pior   = FAIXAS.reduce((worst, f) => parseBR(d[f.id]) < parseBR(d[worst.id]) && parseBR(d[f.id]) > 0 ? f : worst, FAIXAS[FAIXAS.length-1]);
+
+    const horariosHTML = FAIXAS.map(f => `
+      <div class="horario-item">
+        <div class="horario-label">${f.label}</div>
+        <div style="display:flex;align-items:center;justify-content:center;gap:3px;font-size:0.75rem;color:var(--muted);margin-bottom:4px">R$</div>
+        <input class="horario-input" value="${d[f.id]||''}" placeholder="0,00"
+          oninput="updateDomingo(${si},${di},'${f.id}',this.value)"/>
+        <div class="horario-total" style="margin-top:8px;font-size:0.72rem;color:${parseBR(d[f.id])>0?'var(--pos)':'var(--muted)'}">
+          ${parseBR(d[f.id]) > 0 ? ((parseBR(d[f.id])/total*100).toFixed(1)+'% do total') : '—'}
+        </div>
+      </div>`).join('');
+
+    return `
+      <div class="domingo-card">
+        <div class="domingo-head">
+          <div class="domingo-titulo">
+            <span style="font-size:1.2rem">🌅</span>
+            <input style="background:transparent;border:none;border-bottom:1px dashed rgba(0,0,0,0.1);font-family:'Outfit',sans-serif;font-size:0.88rem;font-weight:500;color:var(--text);outline:none;width:220px;padding:2px 0"
+              value="${d.data||''}" placeholder="Data (ex: Domingo, 01/03)"
+              oninput="updateDomingo(${si},${di},'data',this.value)"/>
+          </div>
+          <button class="btn-del-show" onclick="removerDomingo(${si},${di})">🗑</button>
+        </div>
+
+        <div class="horarios-grid">${horariosHTML}</div>
+
+        <div class="domingo-resumo">
+          <div class="dr-item">
+            <span class="dr-lbl">Faturamento Total</span>
+            <span class="dr-val">R$ ${total > 0 ? formatBR(total) : '—'}</span>
+          </div>
+          <div class="dr-item">
+            <span class="dr-lbl">Melhor Horário</span>
+            <span class="dr-val" style="color:var(--pos)">${parseBR(d[melhor.id]) > 0 ? melhor.label : '—'}</span>
+          </div>
+          <div class="dr-item">
+            <span class="dr-lbl">Horário Mais Fraco</span>
+            <span class="dr-val" style="color:var(--red)">${parseBR(d[pior.id]) > 0 ? pior.label : '—'}</span>
+          </div>
+          <div class="dr-item">
+            <span class="dr-lbl">Viabilidade 17–19h</span>
+            <span class="dr-val">${parseBR(d.h1719) >= 500 ? '✅ Boa entrada' : parseBR(d.h1719) > 0 ? '⚠️ Entrada baixa' : '—'}</span>
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+
+  renderChartDomingos();
 }
 
 // ════════════════════════════════
