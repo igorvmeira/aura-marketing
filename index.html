@@ -191,7 +191,9 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;font
 .inp-show:focus{border-color:var(--green);}
 .btn-del-show{width:26px;height:26px;border-radius:6px;border:1px solid var(--border);background:transparent;cursor:pointer;color:var(--muted);display:flex;align-items:center;justify-content:center;transition:all .2s;font-size:0.9rem;}
 .btn-del-show:hover{background:var(--red-s);color:var(--red);border-color:var(--red);}
-.consumo-especial{font-size:0.65rem;color:#f4b942;margin-top:2px;}
+.filtro-btn{padding:7px 14px;font-family:'Outfit',sans-serif;font-size:0.75rem;font-weight:400;border:none;background:transparent;color:var(--muted);cursor:pointer;transition:all .2s;}
+.filtro-btn:hover{color:var(--text);}
+.filtro-ativo{background:var(--surface)!important;color:var(--green)!important;font-weight:500;box-shadow:0 1px 3px rgba(0,0,0,0.08);}
 
 </style>
 </head>
@@ -368,8 +370,8 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;font
     <!-- ═══ SHOWS & BANDAS ═══ -->
     <div class="page" id="page-shows">
 
-      <!-- KPIs da semana -->
-      <div class="sec">Resumo da Semana — Shows & Bandas</div>
+      <!-- KPIs do mês inteiro -->
+      <div class="sec">Resumo do Mês — Shows & Bandas</div>
       <div class="shows-kpi-grid">
         <div class="kpi-card">
           <div class="kpi-lbl">Custo Total <span style="font-size:0.55rem;color:var(--pos)">AUTO</span></div>
@@ -390,25 +392,48 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;font
         </div>
       </div>
 
-      <!-- Ações -->
-      <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap">
-        <button class="btn btn-primary" onclick="addNoite()">
-          <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Adicionar noite
-        </button>
-        <button class="btn btn-ghost" onclick="carregarAgendaPDF()">
-          <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-          Carregar agenda março
-        </button>
-        <label class="btn btn-ghost" style="cursor:pointer">
-          <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-          Importar Excel
-          <input type="file" accept=".xlsx,.xls,.csv" style="display:none" onchange="importarExcelShows(event)"/>
-        </label>
+      <!-- Filtros + Ações -->
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap;justify-content:space-between">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          <!-- Filtro Visualização -->
+          <div style="display:flex;background:var(--surface2);border:1px solid var(--border);border-radius:8px;overflow:hidden">
+            <button id="filtro_mes"    class="filtro-btn filtro-ativo" onclick="setFiltro('mes')">Mês inteiro</button>
+            <button id="filtro_semana" class="filtro-btn"              onclick="setFiltro('semana')">Por semana</button>
+            <button id="filtro_dia"    class="filtro-btn"              onclick="setFiltro('dia')">Por dia</button>
+            <button id="filtro_atracao"class="filtro-btn"              onclick="setFiltro('atracao')">Por atração</button>
+          </div>
+
+          <!-- Select semana (aparece quando filtro=semana) -->
+          <select id="sel_semana" class="inp-show" style="display:none;width:auto;padding:7px 12px" onchange="renderShows()">
+          </select>
+
+          <!-- Select dia (aparece quando filtro=dia) -->
+          <select id="sel_dia" class="inp-show" style="display:none;width:auto;padding:7px 12px" onchange="renderShows()">
+          </select>
+
+          <!-- Select atração (aparece quando filtro=atracao) -->
+          <select id="sel_atracao" class="inp-show" style="display:none;width:auto;padding:7px 12px" onchange="renderShows()">
+          </select>
+        </div>
+
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-primary" onclick="addNoite()">
+            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Adicionar noite
+          </button>
+          <button class="btn btn-ghost" onclick="carregarAgendaPDF()">
+            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            Carregar agenda março
+          </button>
+          <label class="btn btn-ghost" style="cursor:pointer">
+            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            Importar Excel
+            <input type="file" accept=".xlsx,.xls,.csv" style="display:none" onchange="importarExcelShows(event)"/>
+          </label>
+        </div>
       </div>
 
       <!-- Lista de noites -->
-      <div class="sec">Noites da Semana</div>
       <div id="showsList"></div>
 
       <!-- Ranking -->
@@ -758,11 +783,18 @@ document.addEventListener('input', ev => {
 // ════════════════════════════════
 // SEMANAS
 // ════════════════════════════════
+let paginaAtiva = 'dashboard';
+
 function changeWeek(d) {
   const n = currentWeek + d;
   if (n < 0 || n >= DB.semanas.length) return;
   currentWeek = n;
   render();
+  recalcTudo();
+  // Atualiza a aba que estiver aberta
+  if (paginaAtiva === 'shows')    { renderShows(); renderRanking(); }
+  if (paginaAtiva === 'graficos') renderGraficos();
+  if (paginaAtiva === 'metricas') renderMetricas();
 }
 
 function newWeek() {
@@ -785,6 +817,7 @@ function deleteWeek() {
 // NAVEGAÇÃO
 // ════════════════════════════════
 function showPage(id, el) {
+  paginaAtiva = id;
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('page-' + id).classList.add('active');
@@ -950,7 +983,6 @@ function salvarEdicao() {
 // SHOWS & BANDAS
 // ════════════════════════════════
 
-// Bandas com consumo especial
 const CONSUMO_ESPECIAL = { 'Jarlan': 120, 'Ser Samba': 120, 'Gabriel Silva': 120 };
 const CONSUMO_PADRAO = 90;
 
@@ -961,90 +993,164 @@ function getConsumo(nomeBanda) {
   return CONSUMO_PADRAO;
 }
 
+// Retorna TODAS as noites de TODAS as semanas
+function todasAsNoites() {
+  const noites = [];
+  DB.semanas.forEach((s, si) => {
+    (s.shows || []).forEach((noite, ni) => {
+      noites.push({ ...noite, _semanaIdx: si, _noiteIdx: ni, _semanaLabel: s.label || `Semana ${si+1}` });
+    });
+  });
+  return noites;
+}
+
+// Retorna noites da semana atual
 function showsDataSemana() {
   const s = DB.semanas[currentWeek];
   if (!s.shows) s.shows = [];
   return s.shows;
 }
 
-function addNoite() {
-  const shows = showsDataSemana();
-  shows.push({
-    id: Date.now(),
-    data: '',
-    couvert: '',
-    bandas: [{ nome: '', cache: '' }]
+let filtroAtivo = 'mes';
+
+function setFiltro(f) {
+  filtroAtivo = f;
+  document.querySelectorAll('.filtro-btn').forEach(b => b.classList.remove('filtro-ativo'));
+  document.getElementById('filtro_' + f).classList.add('filtro-ativo');
+  ['sel_semana','sel_dia','sel_atracao'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'none';
   });
+  if (f === 'semana') {
+    const sel = document.getElementById('sel_semana');
+    sel.style.display = '';
+    sel.innerHTML = DB.semanas.map((s,i) => `<option value="${i}">${s.label||'Semana '+(i+1)}</option>`).join('');
+    sel.value = currentWeek;
+  }
+  if (f === 'dia') {
+    const sel = document.getElementById('sel_dia');
+    sel.style.display = '';
+    const dias = [...new Set(todasAsNoites().map(n => n.data).filter(Boolean))].sort();
+    sel.innerHTML = dias.map(d => `<option value="${d}">${d}</option>`).join('');
+  }
+  if (f === 'atracao') {
+    const sel = document.getElementById('sel_atracao');
+    sel.style.display = '';
+    const nomes = [...new Set(todasAsNoites().flatMap(n => n.bandas.map(b => b.nome)).filter(Boolean))].sort();
+    sel.innerHTML = nomes.map(n => `<option value="${n}">${n}</option>`).join('');
+  }
+  renderShows();
+}
+
+// Retorna noites filtradas conforme filtro ativo
+function noitesFiltradas() {
+  const todas = todasAsNoites();
+  if (filtroAtivo === 'mes')     return todas;
+  if (filtroAtivo === 'semana')  {
+    const idx = parseInt(document.getElementById('sel_semana')?.value ?? currentWeek);
+    return todas.filter(n => n._semanaIdx === idx);
+  }
+  if (filtroAtivo === 'dia') {
+    const dia = document.getElementById('sel_dia')?.value || '';
+    return todas.filter(n => n.data === dia);
+  }
+  if (filtroAtivo === 'atracao') {
+    const atr = document.getElementById('sel_atracao')?.value || '';
+    return todas.filter(n => n.bandas.some(b => b.nome === atr));
+  }
+  return todas;
+}
+
+function addNoite() {
+  const s = DB.semanas[currentWeek];
+  if (!s.shows) s.shows = [];
+  s.shows.push({ id: Date.now(), data: '', couvert: '', bandas: [{ nome: '', cache: '' }] });
+  // Muda filtro para semana atual para mostrar a noite adicionada
+  filtroAtivo = 'semana';
+  document.querySelectorAll('.filtro-btn').forEach(b => b.classList.remove('filtro-ativo'));
+  document.getElementById('filtro_semana').classList.add('filtro-ativo');
+  const sel = document.getElementById('sel_semana');
+  sel.style.display = '';
+  sel.innerHTML = DB.semanas.map((s,i) => `<option value="${i}">${s.label||'Semana '+(i+1)}</option>`).join('');
+  sel.value = currentWeek;
   renderShows();
   autoSave();
 }
 
-function addBanda(noiteIdx) {
-  showsDataSemana()[noiteIdx].bandas.push({ nome: '', cache: '' });
+function addBanda(semanaIdx, noiteIdx) {
+  DB.semanas[semanaIdx].shows[noiteIdx].bandas.push({ nome: '', cache: '' });
   renderShows();
 }
 
-function removerNoite(noiteIdx) {
-  showsDataSemana().splice(noiteIdx, 1);
+function removerNoite(semanaIdx, noiteIdx) {
+  DB.semanas[semanaIdx].shows.splice(noiteIdx, 1);
   renderShows();
   calcShowsKPIs();
   autoSave();
 }
 
-function removerBanda(noiteIdx, bandaIdx) {
-  const bandas = showsDataSemana()[noiteIdx].bandas;
+function removerBanda(semanaIdx, noiteIdx, bandaIdx) {
+  const bandas = DB.semanas[semanaIdx].shows[noiteIdx].bandas;
   if (bandas.length <= 1) return;
   bandas.splice(bandaIdx, 1);
   renderShows();
   calcShowsKPIs();
 }
 
-function updateShow(noiteIdx, field, value) {
-  showsDataSemana()[noiteIdx][field] = value;
+function updateShow(semanaIdx, noiteIdx, field, value) {
+  DB.semanas[semanaIdx].shows[noiteIdx][field] = value;
   calcShowsKPIs();
 }
 
-function updateBanda(noiteIdx, bandaIdx, field, value) {
-  showsDataSemana()[noiteIdx].bandas[bandaIdx][field] = value;
-  renderShowsSummary(noiteIdx);
+function updateBanda(semanaIdx, noiteIdx, bandaIdx, field, value) {
+  DB.semanas[semanaIdx].shows[noiteIdx].bandas[bandaIdx][field] = value;
+  renderShowsSummary(semanaIdx, noiteIdx);
   calcShowsKPIs();
 }
 
 function renderShows() {
-  const shows = showsDataSemana();
+  const noites = noitesFiltradas();
   const container = document.getElementById('showsList');
   if (!container) return;
 
-  if (shows.length === 0) {
-    container.innerHTML = `<div style="text-align:center;padding:40px;color:var(--muted);font-size:0.82rem">Nenhuma noite cadastrada. Clique em "Adicionar noite" para começar.</div>`;
+  if (noites.length === 0) {
+    container.innerHTML = `<div style="text-align:center;padding:40px;color:var(--muted);font-size:0.82rem">Nenhuma noite encontrada para este filtro.</div>`;
     calcShowsKPIs();
     return;
   }
 
-  container.innerHTML = '';
-  shows.forEach((noite, ni) => {
-    const card = document.createElement('div');
-    card.className = 'show-card';
-    card.id = `show_card_${ni}`;
+  // Agrupa por semana para mostrar separador
+  let htmlFinal = '';
+  let semanaAtualLabel = '';
 
-    // Bandas HTML
-    let bandasHTML = noite.bandas.map((b, bi) => {
+  noites.forEach((noite) => {
+    const si = noite._semanaIdx;
+    const ni = noite._noiteIdx;
+
+    // Cabeçalho de semana (apenas no modo mês)
+    if (filtroAtivo === 'mes' && noite._semanaLabel !== semanaAtualLabel) {
+      semanaAtualLabel = noite._semanaLabel;
+      htmlFinal += `<div class="sec" style="margin-top:${htmlFinal ? '20px' : '0'}">${semanaAtualLabel}</div>`;
+    }
+
+    const bandas = noite.bandas || [];
+    let bandasHTML = bandas.map((b, bi) => {
       const consumo = getConsumo(b.nome || '');
-      const especial = CONSUMO_ESPECIAL[Object.keys(CONSUMO_ESPECIAL).find(k => (b.nome||'').toLowerCase().includes(k.toLowerCase())) || ''];
+      const especial = Object.keys(CONSUMO_ESPECIAL).find(k => (b.nome||'').toLowerCase().includes(k.toLowerCase()));
       const cache = parseBR(b.cache);
       const custoTotal = cache + consumo;
       return `
-        <div class="show-banda-row" id="banda_${ni}_${bi}">
+        <div class="show-banda-row">
           <div>
             <div class="sb-label">Banda / Artista</div>
             <input class="inp-show" value="${b.nome||''}" placeholder="Nome da banda"
-              oninput="updateBanda(${ni},${bi},'nome',this.value)"/>
-            ${especial ? `<div class="consumo-especial">⭐ Consumo especial: R$ ${especial}</div>` : ''}
+              oninput="updateBanda(${si},${ni},${bi},'nome',this.value)"/>
+            ${especial ? `<div class="consumo-especial">⭐ Consumo especial: R$ ${CONSUMO_ESPECIAL[especial]}</div>` : ''}
           </div>
           <div>
             <div class="sb-label">Cachê (R$)</div>
             <input class="inp-show" value="${b.cache||''}" placeholder="0,00" style="text-align:right"
-              oninput="updateBanda(${ni},${bi},'cache',this.value)"/>
+              oninput="updateBanda(${si},${ni},${bi},'cache',this.value)"/>
           </div>
           <div>
             <div class="sb-label">Consumo</div>
@@ -1054,150 +1160,114 @@ function renderShows() {
             <div class="sb-label">Custo Total</div>
             <div class="sb-val" style="padding:7px 0;font-weight:500">R$ ${formatBR(custoTotal)}</div>
           </div>
-          <button class="btn-del-show" onclick="removerBanda(${ni},${bi})" title="Remover banda">✕</button>
+          <button class="btn-del-show" onclick="removerBanda(${si},${ni},${bi})" title="Remover">✕</button>
         </div>`;
     }).join('');
 
-    card.innerHTML = `
-      <div class="show-card-head">
-        <div style="display:flex;align-items:center;gap:12px">
-          <span style="font-size:1.1rem">🎵</span>
-          <input class="inp-show" value="${noite.data||''}" placeholder="Dia (ex: Segunda-feira, 17/03)"
-            style="width:220px;font-weight:500" oninput="updateShow(${ni},'data',this.value)"/>
+    htmlFinal += `
+      <div class="show-card" id="show_card_${si}_${ni}">
+        <div class="show-card-head">
+          <div style="display:flex;align-items:center;gap:12px">
+            <span style="font-size:1.1rem">🎵</span>
+            <input class="inp-show" value="${noite.data||''}" placeholder="Dia (ex: Sexta-feira, 20/03)"
+              style="width:240px;font-weight:500" oninput="updateShow(${si},${ni},'data',this.value)"/>
+          </div>
+          <button class="btn-del-show" onclick="removerNoite(${si},${ni})" title="Remover noite">🗑</button>
         </div>
-        <button class="btn-del-show" onclick="removerNoite(${ni})" title="Remover noite">🗑</button>
-      </div>
-
-      <div id="bandas_container_${ni}">${bandasHTML}</div>
-
-      <button class="btn btn-ghost" style="margin-top:10px;font-size:0.72rem" onclick="addBanda(${ni})">
-        <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        Adicionar banda
-      </button>
-
-      <div style="margin-top:14px">
-        <div class="sb-label" style="margin-bottom:6px">Couvert Arrecadado (R$)</div>
-        <input class="inp-show" value="${noite.couvert||''}" placeholder="0,00" style="width:160px;text-align:right"
-          oninput="updateShow(${ni},'couvert',this.value)"/>
-      </div>
-
-      <div class="show-summary" id="summary_${ni}"></div>`;
-
-    container.appendChild(card);
-    renderShowsSummary(ni);
+        ${bandasHTML}
+        <button class="btn btn-ghost" style="margin-top:10px;font-size:0.72rem" onclick="addBanda(${si},${ni})">
+          <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Adicionar banda
+        </button>
+        <div style="margin-top:14px">
+          <div class="sb-label" style="margin-bottom:6px">Couvert Arrecadado (R$)</div>
+          <input class="inp-show" value="${noite.couvert||''}" placeholder="0,00" style="width:160px;text-align:right"
+            oninput="updateShow(${si},${ni},'couvert',this.value)"/>
+        </div>
+        <div class="show-summary" id="summary_${si}_${ni}"></div>
+      </div>`;
   });
+
+  container.innerHTML = htmlFinal;
+
+  // Renderiza summaries
+  noites.forEach(noite => renderShowsSummary(noite._semanaIdx, noite._noiteIdx));
 
   calcShowsKPIs();
   renderRanking();
 }
 
-function renderShowsSummary(ni) {
-  const noite = showsDataSemana()[ni];
+function renderShowsSummary(si, ni) {
+  const noite = DB.semanas[si]?.shows?.[ni];
   if (!noite) return;
-  const el = document.getElementById(`summary_${ni}`);
+  const el = document.getElementById(`summary_${si}_${ni}`);
   if (!el) return;
 
   let custoTotal = 0;
-  noite.bandas.forEach(b => {
-    custoTotal += parseBR(b.cache) + getConsumo(b.nome || '');
-  });
-  const couvert   = parseBR(noite.couvert);
-  const lucro     = couvert - custoTotal;
+  noite.bandas.forEach(b => { custoTotal += parseBR(b.cache) + getConsumo(b.nome || ''); });
+  const couvert    = parseBR(noite.couvert);
+  const lucro      = couvert - custoTotal;
   const pctRetorno = custoTotal > 0 ? (couvert / custoTotal * 100) : 0;
-  const breakEven = custoTotal > 0 ? Math.ceil(custoTotal / (couvert / (noite.bandas.length || 1) || 1)) : 0;
-  const lucroPos  = lucro >= 0;
+  const lucroPos   = lucro >= 0;
 
   el.innerHTML = `
-    <div class="ss-item">
-      <span class="ss-lbl">Custo noite</span>
-      <span class="ss-val">R$ ${formatBR(custoTotal)}</span>
-    </div>
-    <div class="ss-item">
-      <span class="ss-lbl">Couvert</span>
-      <span class="ss-val">R$ ${formatBR(couvert)}</span>
-    </div>
-    <div class="ss-item">
-      <span class="ss-lbl">Lucro Líquido</span>
-      <span class="ss-val" style="color:${lucroPos ? 'var(--pos)' : 'var(--red)'}">R$ ${formatBR(lucro)}</span>
-    </div>
-    <div class="ss-item">
-      <span class="ss-lbl">% Retorno</span>
-      <span class="ss-val" style="color:${pctRetorno >= 100 ? 'var(--pos)' : pctRetorno >= 60 ? '#f4b942' : 'var(--red)'}">
-        ${custoTotal > 0 ? pctRetorno.toFixed(1) + '%' : '—'}
-      </span>
-    </div>
-    <div class="ss-item">
-      <span class="ss-lbl">Viabilidade</span>
-      <span class="ss-val">${lucroPos ? '✅ Viável' : '⚠️ Prejuízo'}</span>
-    </div>`;
+    <div class="ss-item"><span class="ss-lbl">Custo noite</span><span class="ss-val">R$ ${formatBR(custoTotal)}</span></div>
+    <div class="ss-item"><span class="ss-lbl">Couvert</span><span class="ss-val">R$ ${formatBR(couvert)}</span></div>
+    <div class="ss-item"><span class="ss-lbl">Lucro Líquido</span><span class="ss-val" style="color:${lucroPos?'var(--pos)':'var(--red)'}">R$ ${formatBR(lucro)}</span></div>
+    <div class="ss-item"><span class="ss-lbl">% Retorno</span><span class="ss-val" style="color:${pctRetorno>=100?'var(--pos)':pctRetorno>=60?'#f4b942':'var(--red)'}">
+      ${custoTotal > 0 ? pctRetorno.toFixed(1)+'%' : '—'}</span></div>
+    <div class="ss-item"><span class="ss-lbl">Viabilidade</span><span class="ss-val">${lucroPos?'✅ Viável':'⚠️ Prejuízo'}</span></div>`;
 }
 
 function calcShowsKPIs() {
-  const shows = showsDataSemana();
+  // Calcula sobre TODAS as noites (mês inteiro)
+  const todas = todasAsNoites();
   let totalCusto = 0, totalCouvert = 0, totalShows = 0;
-
-  shows.forEach(noite => {
-    noite.bandas.forEach(b => {
-      totalCusto += parseBR(b.cache) + getConsumo(b.nome || '');
-      totalShows++;
-    });
+  todas.forEach(noite => {
+    noite.bandas.forEach(b => { totalCusto += parseBR(b.cache) + getConsumo(b.nome || ''); totalShows++; });
     totalCouvert += parseBR(noite.couvert);
   });
-
   const lucro = totalCouvert - totalCusto;
   const media = totalShows > 0 ? totalCouvert / totalShows : 0;
-
   const setText = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
   setText('sk_custo',   totalCusto   > 0 ? formatBR(totalCusto)   : '—');
   setText('sk_couvert', totalCouvert > 0 ? formatBR(totalCouvert) : '—');
   setText('sk_lucro',   totalCusto   > 0 ? formatBR(lucro)        : '—');
   setText('sk_media',   totalShows   > 0 ? formatBR(media)        : '—');
-
   const wrap = document.getElementById('sk_lucro_wrap');
   if (wrap && totalCusto > 0) wrap.style.color = lucro >= 0 ? 'var(--pos)' : 'var(--red)';
 }
 
 function renderRanking() {
-  // Consolida todas as semanas
   const ranking = {};
-  DB.semanas.forEach(s => {
-    (s.shows || []).forEach(noite => {
-      const couvert = parseBR(noite.couvert);
-      const nBandas = noite.bandas.length || 1;
-      const couvertPorBanda = couvert / nBandas;
-      noite.bandas.forEach(b => {
-        if (!b.nome) return;
-        const nome = b.nome.trim();
-        if (!ranking[nome]) ranking[nome] = { nome, aparicoes: 0, totalCouvert: 0, totalCusto: 0, totalLucro: 0 };
-        const custo = parseBR(b.cache) + getConsumo(nome);
-        ranking[nome].aparicoes++;
-        ranking[nome].totalCouvert += couvertPorBanda;
-        ranking[nome].totalCusto   += custo;
-        ranking[nome].totalLucro   += couvertPorBanda - custo;
-      });
+  todasAsNoites().forEach(noite => {
+    const couvert  = parseBR(noite.couvert);
+    const nBandas  = noite.bandas.length || 1;
+    const couvertPB = couvert / nBandas;
+    noite.bandas.forEach(b => {
+      if (!b.nome) return;
+      const nome = b.nome.trim();
+      if (!ranking[nome]) ranking[nome] = { nome, aparicoes:0, totalCouvert:0, totalCusto:0, totalLucro:0 };
+      const custo = parseBR(b.cache) + getConsumo(nome);
+      ranking[nome].aparicoes++;
+      ranking[nome].totalCouvert += couvertPB;
+      ranking[nome].totalCusto   += custo;
+      ranking[nome].totalLucro   += couvertPB - custo;
     });
   });
-
-  const sorted = Object.values(ranking).sort((a, b) => b.totalLucro - a.totalLucro);
+  const sorted = Object.values(ranking).sort((a,b) => b.totalLucro - a.totalLucro);
   const el = document.getElementById('rankingList');
   if (!el) return;
-
-  if (sorted.length === 0) {
-    el.innerHTML = `<div style="text-align:center;padding:24px;color:var(--muted);font-size:0.8rem">Nenhum dado ainda.</div>`;
-    return;
-  }
-
+  if (sorted.length === 0) { el.innerHTML = `<div style="text-align:center;padding:24px;color:var(--muted);font-size:0.8rem">Nenhum dado ainda.</div>`; return; }
   const medals = ['🥇','🥈','🥉'];
-  el.innerHTML = sorted.map((r, i) => `
+  el.innerHTML = sorted.map((r,i) => `
     <div class="ranking-item">
-      <span class="rank-num">${medals[i] || (i+1)}</span>
+      <span class="rank-num">${medals[i]||(i+1)}</span>
       <span class="rank-name">
         <div style="font-size:0.82rem;font-weight:500">${r.nome}</div>
-        <div style="font-size:0.68rem;color:var(--muted)">${r.aparicoes} apariç${r.aparicoes === 1 ? 'ão' : 'ões'} · Couvert médio: R$ ${formatBR(r.totalCouvert/r.aparicoes)}</div>
+        <div style="font-size:0.68rem;color:var(--muted)">${r.aparicoes} aparição${r.aparicoes!==1?'ões':''} · Couvert médio: R$ ${formatBR(r.totalCouvert/r.aparicoes)}</div>
       </span>
-      <span class="rank-val" style="color:${r.totalLucro >= 0 ? 'var(--pos)' : 'var(--red)'}">
-        R$ ${formatBR(r.totalLucro)}
-      </span>
+      <span class="rank-val" style="color:${r.totalLucro>=0?'var(--pos)':'var(--red)'}">R$ ${formatBR(r.totalLucro)}</span>
     </div>`).join('');
 }
 
