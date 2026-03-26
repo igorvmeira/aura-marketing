@@ -166,9 +166,33 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;font
 .toast{position:fixed;bottom:22px;right:22px;background:var(--green);color:#fff;padding:11px 18px;border-radius:9px;font-size:0.78rem;display:flex;align-items:center;gap:7px;z-index:200;transform:translateY(70px);opacity:0;transition:all .3s cubic-bezier(.4,0,.2,1);}
 .toast.show{transform:translateY(0);opacity:1;}
 
-@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
-.plat-card,.kpi-card,.camp-card,.chart-card,.obs-card{animation:fadeUp .35s ease both;}
+/* SHOWS PAGE */
+.shows-kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px;}
+.show-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);margin-bottom:12px;}
+.show-card-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
+.show-date{font-size:0.78rem;font-weight:500;color:var(--text);}
+.show-total{font-size:0.72rem;color:var(--muted);}
+.show-banda-row{background:var(--surface2);border-radius:8px;padding:12px;margin-bottom:8px;display:grid;grid-template-columns:2fr 1fr 1fr 1fr auto;gap:10px;align-items:center;}
+.show-banda-row:last-child{margin-bottom:0;}
+.sb-label{font-size:0.62rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:3px;}
+.sb-val{font-size:0.8rem;}
+.sb-calc{font-size:0.8rem;font-weight:500;color:var(--pos);}
+.sb-neg{color:var(--red);}
+.show-summary{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-top:14px;padding-top:14px;border-top:1px solid var(--border);}
+.ss-item{display:flex;flex-direction:column;gap:2px;}
+.ss-lbl{font-size:0.6rem;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);}
+.ss-val{font-size:0.88rem;font-weight:500;}
+.ranking-item{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);}
+.ranking-item:last-child{border-bottom:none;}
+.rank-num{font-size:0.75rem;font-weight:600;color:var(--muted);width:20px;}
+.rank-name{font-size:0.82rem;flex:1;padding:0 10px;}
+.rank-val{font-size:0.82rem;font-weight:500;}
+.inp-show{width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:7px;font-family:'Outfit',sans-serif;font-size:0.8rem;background:var(--surface);color:var(--text);outline:none;transition:border-color .2s;}
+.inp-show:focus{border-color:var(--green);}
+.btn-del-show{width:26px;height:26px;border-radius:6px;border:1px solid var(--border);background:transparent;cursor:pointer;color:var(--muted);display:flex;align-items:center;justify-content:center;transition:all .2s;font-size:0.9rem;}
+.btn-del-show:hover{background:var(--red-s);color:var(--red);border-color:var(--red);}
+.consumo-especial{font-size:0.65rem;color:#f4b942;margin-top:2px;}
+
 </style>
 </head>
 <body>
@@ -206,6 +230,10 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;font
     <div class="nav-item" onclick="showPage('metricas',this)">
       <svg class="nav-ico" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
       Métricas
+    </div>
+    <div class="nav-item" onclick="showPage('shows',this)">
+      <svg class="nav-ico" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+      Shows & Bandas
     </div>
   </nav>
   <div class="sidebar-footer">
@@ -336,6 +364,56 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;font
         </tr></thead><tbody id="metricBody"></tbody></table>
       </div>
     </div>
+
+    <!-- ═══ SHOWS & BANDAS ═══ -->
+    <div class="page" id="page-shows">
+
+      <!-- KPIs da semana -->
+      <div class="sec">Resumo da Semana — Shows & Bandas</div>
+      <div class="shows-kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-lbl">Custo Total <span style="font-size:0.55rem;color:var(--pos)">AUTO</span></div>
+          <div class="kpi-val" style="font-size:1.4rem">R$&nbsp;<span id="sk_custo">—</span></div>
+          <div style="font-size:0.7rem;color:var(--muted);margin-top:4px">Cachê + consumo</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-lbl">Couvert Total <span style="font-size:0.55rem;color:var(--pos)">AUTO</span></div>
+          <div class="kpi-val" style="font-size:1.4rem">R$&nbsp;<span id="sk_couvert">—</span></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-lbl">Lucro Líquido <span style="font-size:0.55rem;color:var(--pos)">AUTO</span></div>
+          <div class="kpi-val" style="font-size:1.4rem" id="sk_lucro_wrap">R$&nbsp;<span id="sk_lucro">—</span></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-lbl">Média Couvert/Show <span style="font-size:0.55rem;color:var(--pos)">AUTO</span></div>
+          <div class="kpi-val" style="font-size:1.4rem">R$&nbsp;<span id="sk_media">—</span></div>
+        </div>
+      </div>
+
+      <!-- Ações -->
+      <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap">
+        <button class="btn btn-primary" onclick="addNoite()">
+          <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Adicionar noite
+        </button>
+        <label class="btn btn-ghost" style="cursor:pointer">
+          <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Importar Excel
+          <input type="file" accept=".xlsx,.xls,.csv" style="display:none" onchange="importarExcelShows(event)"/>
+        </label>
+      </div>
+
+      <!-- Lista de noites -->
+      <div class="sec">Noites da Semana</div>
+      <div id="showsList"></div>
+
+      <!-- Ranking -->
+      <div class="sec" style="margin-top:4px">Ranking de Atrações — Histórico Geral</div>
+      <div class="chart-card">
+        <div id="rankingList"></div>
+      </div>
+
+    </div><!-- /shows -->
 
   </div><!-- /content -->
 </div><!-- /main -->
@@ -709,6 +787,7 @@ function showPage(id, el) {
   if (el) el.classList.add('active');
   if (id === 'graficos') renderGraficos();
   if (id === 'metricas') renderMetricas();
+  if (id === 'shows') { renderShows(); renderRanking(); }
 }
 
 // ════════════════════════════════
@@ -861,6 +940,297 @@ function salvarEdicao() {
   recalcTudo();
   autoSave();
   toast('Semana atualizada!');
+}
+
+// ════════════════════════════════
+// SHOWS & BANDAS
+// ════════════════════════════════
+
+// Bandas com consumo especial
+const CONSUMO_ESPECIAL = { 'Jarlan': 120, 'Ser Samba': 120, 'Gabriel Silva': 120 };
+const CONSUMO_PADRAO = 90;
+
+function getConsumo(nomeBanda) {
+  for (const [key, val] of Object.entries(CONSUMO_ESPECIAL)) {
+    if (nomeBanda.toLowerCase().includes(key.toLowerCase())) return val;
+  }
+  return CONSUMO_PADRAO;
+}
+
+function showsDataSemana() {
+  const s = DB.semanas[currentWeek];
+  if (!s.shows) s.shows = [];
+  return s.shows;
+}
+
+function addNoite() {
+  const shows = showsDataSemana();
+  shows.push({
+    id: Date.now(),
+    data: '',
+    couvert: '',
+    bandas: [{ nome: '', cache: '' }]
+  });
+  renderShows();
+  autoSave();
+}
+
+function addBanda(noiteIdx) {
+  showsDataSemana()[noiteIdx].bandas.push({ nome: '', cache: '' });
+  renderShows();
+}
+
+function removerNoite(noiteIdx) {
+  showsDataSemana().splice(noiteIdx, 1);
+  renderShows();
+  calcShowsKPIs();
+  autoSave();
+}
+
+function removerBanda(noiteIdx, bandaIdx) {
+  const bandas = showsDataSemana()[noiteIdx].bandas;
+  if (bandas.length <= 1) return;
+  bandas.splice(bandaIdx, 1);
+  renderShows();
+  calcShowsKPIs();
+}
+
+function updateShow(noiteIdx, field, value) {
+  showsDataSemana()[noiteIdx][field] = value;
+  calcShowsKPIs();
+}
+
+function updateBanda(noiteIdx, bandaIdx, field, value) {
+  showsDataSemana()[noiteIdx].bandas[bandaIdx][field] = value;
+  renderShowsSummary(noiteIdx);
+  calcShowsKPIs();
+}
+
+function renderShows() {
+  const shows = showsDataSemana();
+  const container = document.getElementById('showsList');
+  if (!container) return;
+
+  if (shows.length === 0) {
+    container.innerHTML = `<div style="text-align:center;padding:40px;color:var(--muted);font-size:0.82rem">Nenhuma noite cadastrada. Clique em "Adicionar noite" para começar.</div>`;
+    calcShowsKPIs();
+    return;
+  }
+
+  container.innerHTML = '';
+  shows.forEach((noite, ni) => {
+    const card = document.createElement('div');
+    card.className = 'show-card';
+    card.id = `show_card_${ni}`;
+
+    // Bandas HTML
+    let bandasHTML = noite.bandas.map((b, bi) => {
+      const consumo = getConsumo(b.nome || '');
+      const especial = CONSUMO_ESPECIAL[Object.keys(CONSUMO_ESPECIAL).find(k => (b.nome||'').toLowerCase().includes(k.toLowerCase())) || ''];
+      const cache = parseBR(b.cache);
+      const custoTotal = cache + consumo;
+      return `
+        <div class="show-banda-row" id="banda_${ni}_${bi}">
+          <div>
+            <div class="sb-label">Banda / Artista</div>
+            <input class="inp-show" value="${b.nome||''}" placeholder="Nome da banda"
+              oninput="updateBanda(${ni},${bi},'nome',this.value)"/>
+            ${especial ? `<div class="consumo-especial">⭐ Consumo especial: R$ ${especial}</div>` : ''}
+          </div>
+          <div>
+            <div class="sb-label">Cachê (R$)</div>
+            <input class="inp-show" value="${b.cache||''}" placeholder="0,00" style="text-align:right"
+              oninput="updateBanda(${ni},${bi},'cache',this.value)"/>
+          </div>
+          <div>
+            <div class="sb-label">Consumo</div>
+            <div class="sb-val" style="padding:7px 0">R$ ${consumo.toFixed(2).replace('.',',')}</div>
+          </div>
+          <div>
+            <div class="sb-label">Custo Total</div>
+            <div class="sb-val" style="padding:7px 0;font-weight:500">R$ ${formatBR(custoTotal)}</div>
+          </div>
+          <button class="btn-del-show" onclick="removerBanda(${ni},${bi})" title="Remover banda">✕</button>
+        </div>`;
+    }).join('');
+
+    card.innerHTML = `
+      <div class="show-card-head">
+        <div style="display:flex;align-items:center;gap:12px">
+          <span style="font-size:1.1rem">🎵</span>
+          <input class="inp-show" value="${noite.data||''}" placeholder="Dia (ex: Segunda-feira, 17/03)"
+            style="width:220px;font-weight:500" oninput="updateShow(${ni},'data',this.value)"/>
+        </div>
+        <button class="btn-del-show" onclick="removerNoite(${ni})" title="Remover noite">🗑</button>
+      </div>
+
+      <div id="bandas_container_${ni}">${bandasHTML}</div>
+
+      <button class="btn btn-ghost" style="margin-top:10px;font-size:0.72rem" onclick="addBanda(${ni})">
+        <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Adicionar banda
+      </button>
+
+      <div style="margin-top:14px">
+        <div class="sb-label" style="margin-bottom:6px">Couvert Arrecadado (R$)</div>
+        <input class="inp-show" value="${noite.couvert||''}" placeholder="0,00" style="width:160px;text-align:right"
+          oninput="updateShow(${ni},'couvert',this.value)"/>
+      </div>
+
+      <div class="show-summary" id="summary_${ni}"></div>`;
+
+    container.appendChild(card);
+    renderShowsSummary(ni);
+  });
+
+  calcShowsKPIs();
+  renderRanking();
+}
+
+function renderShowsSummary(ni) {
+  const noite = showsDataSemana()[ni];
+  if (!noite) return;
+  const el = document.getElementById(`summary_${ni}`);
+  if (!el) return;
+
+  let custoTotal = 0;
+  noite.bandas.forEach(b => {
+    custoTotal += parseBR(b.cache) + getConsumo(b.nome || '');
+  });
+  const couvert   = parseBR(noite.couvert);
+  const lucro     = couvert - custoTotal;
+  const pctRetorno = custoTotal > 0 ? (couvert / custoTotal * 100) : 0;
+  const breakEven = custoTotal > 0 ? Math.ceil(custoTotal / (couvert / (noite.bandas.length || 1) || 1)) : 0;
+  const lucroPos  = lucro >= 0;
+
+  el.innerHTML = `
+    <div class="ss-item">
+      <span class="ss-lbl">Custo noite</span>
+      <span class="ss-val">R$ ${formatBR(custoTotal)}</span>
+    </div>
+    <div class="ss-item">
+      <span class="ss-lbl">Couvert</span>
+      <span class="ss-val">R$ ${formatBR(couvert)}</span>
+    </div>
+    <div class="ss-item">
+      <span class="ss-lbl">Lucro Líquido</span>
+      <span class="ss-val" style="color:${lucroPos ? 'var(--pos)' : 'var(--red)'}">R$ ${formatBR(lucro)}</span>
+    </div>
+    <div class="ss-item">
+      <span class="ss-lbl">% Retorno</span>
+      <span class="ss-val" style="color:${pctRetorno >= 100 ? 'var(--pos)' : pctRetorno >= 60 ? '#f4b942' : 'var(--red)'}">
+        ${custoTotal > 0 ? pctRetorno.toFixed(1) + '%' : '—'}
+      </span>
+    </div>
+    <div class="ss-item">
+      <span class="ss-lbl">Viabilidade</span>
+      <span class="ss-val">${lucroPos ? '✅ Viável' : '⚠️ Prejuízo'}</span>
+    </div>`;
+}
+
+function calcShowsKPIs() {
+  const shows = showsDataSemana();
+  let totalCusto = 0, totalCouvert = 0, totalShows = 0;
+
+  shows.forEach(noite => {
+    noite.bandas.forEach(b => {
+      totalCusto += parseBR(b.cache) + getConsumo(b.nome || '');
+      totalShows++;
+    });
+    totalCouvert += parseBR(noite.couvert);
+  });
+
+  const lucro = totalCouvert - totalCusto;
+  const media = totalShows > 0 ? totalCouvert / totalShows : 0;
+
+  const setText = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+  setText('sk_custo',   totalCusto   > 0 ? formatBR(totalCusto)   : '—');
+  setText('sk_couvert', totalCouvert > 0 ? formatBR(totalCouvert) : '—');
+  setText('sk_lucro',   totalCusto   > 0 ? formatBR(lucro)        : '—');
+  setText('sk_media',   totalShows   > 0 ? formatBR(media)        : '—');
+
+  const wrap = document.getElementById('sk_lucro_wrap');
+  if (wrap && totalCusto > 0) wrap.style.color = lucro >= 0 ? 'var(--pos)' : 'var(--red)';
+}
+
+function renderRanking() {
+  // Consolida todas as semanas
+  const ranking = {};
+  DB.semanas.forEach(s => {
+    (s.shows || []).forEach(noite => {
+      const couvert = parseBR(noite.couvert);
+      const nBandas = noite.bandas.length || 1;
+      const couvertPorBanda = couvert / nBandas;
+      noite.bandas.forEach(b => {
+        if (!b.nome) return;
+        const nome = b.nome.trim();
+        if (!ranking[nome]) ranking[nome] = { nome, aparicoes: 0, totalCouvert: 0, totalCusto: 0, totalLucro: 0 };
+        const custo = parseBR(b.cache) + getConsumo(nome);
+        ranking[nome].aparicoes++;
+        ranking[nome].totalCouvert += couvertPorBanda;
+        ranking[nome].totalCusto   += custo;
+        ranking[nome].totalLucro   += couvertPorBanda - custo;
+      });
+    });
+  });
+
+  const sorted = Object.values(ranking).sort((a, b) => b.totalLucro - a.totalLucro);
+  const el = document.getElementById('rankingList');
+  if (!el) return;
+
+  if (sorted.length === 0) {
+    el.innerHTML = `<div style="text-align:center;padding:24px;color:var(--muted);font-size:0.8rem">Nenhum dado ainda.</div>`;
+    return;
+  }
+
+  const medals = ['🥇','🥈','🥉'];
+  el.innerHTML = sorted.map((r, i) => `
+    <div class="ranking-item">
+      <span class="rank-num">${medals[i] || (i+1)}</span>
+      <span class="rank-name">
+        <div style="font-size:0.82rem;font-weight:500">${r.nome}</div>
+        <div style="font-size:0.68rem;color:var(--muted)">${r.aparicoes} apariç${r.aparicoes === 1 ? 'ão' : 'ões'} · Couvert médio: R$ ${formatBR(r.totalCouvert/r.aparicoes)}</div>
+      </span>
+      <span class="rank-val" style="color:${r.totalLucro >= 0 ? 'var(--pos)' : 'var(--red)'}">
+        R$ ${formatBR(r.totalLucro)}
+      </span>
+    </div>`).join('');
+}
+
+// Importar Excel com agenda de shows
+function importarExcelShows(ev) {
+  const file = ev.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      // Parse CSV simples (data, banda, cache)
+      const text = e.target.result;
+      const lines = text.split('\n').filter(l => l.trim());
+      const shows = showsDataSemana();
+
+      lines.slice(1).forEach(line => { // pula header
+        const cols = line.split(',').map(c => c.trim().replace(/^"|"$/g,''));
+        if (cols.length < 2) return;
+        const data  = cols[0] || '';
+        const banda = cols[1] || '';
+        const cache = cols[2] || '';
+
+        const existente = shows.find(s => s.data === data);
+        if (existente) {
+          existente.bandas.push({ nome: banda, cache });
+        } else {
+          shows.push({ id: Date.now(), data, couvert: '', bandas: [{ nome: banda, cache }] });
+        }
+      });
+
+      renderShows();
+      toast('Excel importado! Verifique e ajuste os dados.');
+    } catch(err) {
+      toast('Erro ao importar. Use o formato: Data, Banda, Cachê');
+    }
+  };
+  reader.readAsText(file);
+  ev.target.value = '';
 }
 
 // ════════════════════════════════
