@@ -1290,11 +1290,129 @@ function toast(msg) {
   setTimeout(() => t.classList.remove('show'), 3200);
 }
 
+// ── AGENDA DE SHOWS — MARÇO 2026 (pré-carregada do PDF) ──
+const SHOWS_MARCO_2026 = {
+  9: [ // Semana 9
+    { id:1, data:'Domingo, 01/03', couvert:'', bandas:[
+      { nome:'Ser Samba',     cache:'2.500,00' },
+      { nome:'Gabriel Silva', cache:'650,00'   },
+    ]},
+  ],
+  10: [ // Semana 10
+    { id:2,  data:'Terça-feira, 03/03', couvert:'', bandas:[{ nome:'Robinho',      cache:'300,00' }]},
+    { id:3,  data:'Quarta-feira, 04/03', couvert:'', bandas:[{ nome:'Tiago Mendes', cache:'0,00'  }]},
+    { id:4,  data:'Quinta-feira, 05/03', couvert:'', bandas:[{ nome:'Gabriel Silva',cache:'500,00'}]},
+    { id:5,  data:'Sexta-feira, 06/03', couvert:'', bandas:[
+      { nome:'Grupo Zero4',   cache:'500,00' },
+      { nome:'DJ Gustavo',    cache:'250,00' },
+      { nome:'DJ Gil Mendes', cache:'400,00' },
+    ]},
+    { id:6,  data:'Sábado, 07/03', couvert:'', bandas:[
+      { nome:'Vitinha',       cache:'0,00'   },
+      { nome:'DJ Thigas',     cache:'250,00' },
+      { nome:'Gabriel Silva', cache:'650,00' },
+      { nome:'Brankinho',     cache:'600,00' },
+    ]},
+    { id:7,  data:'Domingo, 08/03', couvert:'', bandas:[
+      { nome:'Pagode do Gabs',cache:'650,00'   },
+      { nome:'Ser Samba',     cache:'3.250,00' },
+    ]},
+  ],
+  11: [ // Semana 11
+    { id:8,  data:'Terça-feira, 10/03', couvert:'', bandas:[{ nome:'Well Freitas',  cache:'350,00' }]},
+    { id:9,  data:'Quarta-feira, 11/03', couvert:'', bandas:[{ nome:'Robinho',       cache:'0,00'  }]},
+    { id:10, data:'Quinta-feira, 12/03', couvert:'', bandas:[{ nome:'Flavio Linns',  cache:'0,00'  }]},
+    { id:11, data:'Sexta-feira, 13/03', couvert:'', bandas:[
+      { nome:'Gabriel Silva', cache:'650,00' },
+      { nome:'DJ Gil Mendes', cache:'400,00' },
+    ]},
+    { id:12, data:'Sábado, 14/03', couvert:'', bandas:[
+      { nome:'DJ Vita',       cache:'400,00' },
+      { nome:'Vitinha',       cache:'0,00'   },
+      { nome:'DJ Thigas',     cache:'250,00' },
+      { nome:'Flavio Linns',  cache:'325,00' },
+      { nome:'Grupo Zero4',   cache:'500,00' },
+    ]},
+    { id:13, data:'Domingo, 15/03', couvert:'', bandas:[
+      { nome:'Brankinho',     cache:'0,00'     },
+      { nome:'Ser Samba',     cache:'2.000,00' },
+    ]},
+  ],
+  12: [ // Semana 12
+    { id:14, data:'Terça-feira, 17/03', couvert:'', bandas:[{ nome:'Robinho',       cache:'300,00' }]},
+    { id:15, data:'Quarta-feira, 18/03', couvert:'', bandas:[{ nome:'Tiago Mendes',  cache:'250,00' }]},
+    { id:16, data:'Quinta-feira, 19/03', couvert:'', bandas:[{ nome:'Flavio Linns',  cache:'550,00' }]},
+    { id:17, data:'Sexta-feira, 20/03', couvert:'', bandas:[
+      { nome:'Gabriel Silva', cache:'650,00' },
+      { nome:'DJ Froes',      cache:'150,00' },
+    ]},
+    { id:18, data:'Sábado, 21/03', couvert:'', bandas:[
+      { nome:'DJ Thigas', cache:'250,00'   },
+      { nome:'Jarlan',    cache:'1.000,00' },
+      { nome:'Vitinha',   cache:'800,00'   },
+    ]},
+    { id:19, data:'Domingo, 22/03', couvert:'', bandas:[
+      { nome:'Badalação', cache:'500,00'   },
+      { nome:'Ser Samba', cache:'2.500,00' },
+    ]},
+  ],
+  13: [ // Semana 13
+    { id:20, data:'Terça-feira, 24/03', couvert:'', bandas:[{ nome:'Well Freitas',       cache:'350,00' }]},
+    { id:21, data:'Quarta-feira, 25/03', couvert:'', bandas:[{ nome:'Tiago Mendes',       cache:'250,00' }]},
+    { id:22, data:'Quinta-feira, 26/03', couvert:'', bandas:[{ nome:'Gustavo Guimarães',  cache:'450,00' }]},
+    { id:23, data:'Sexta-feira, 27/03', couvert:'', bandas:[
+      { nome:'Gabriel Silva', cache:'650,00' },
+      { nome:'DJ Gil Mendes', cache:'400,00' },
+      { nome:'DJ Lessa',      cache:'250,00' },
+    ]},
+    { id:24, data:'Sábado, 28/03', couvert:'', bandas:[
+      { nome:'DJ Thigas',    cache:'250,00' },
+      { nome:'Flavio Linns', cache:'650,00' },
+      { nome:'Vitinha',      cache:'800,00' },
+    ]},
+    { id:25, data:'Domingo, 29/03', couvert:'', bandas:[
+      { nome:'Brankinho', cache:'600,00'   },
+      { nome:'Ser Samba', cache:'3.000,00' },
+    ]},
+  ],
+  14: [ // Semana 14
+    { id:26, data:'Terça-feira, 31/03', couvert:'', bandas:[{ nome:'Well Freitas', cache:'350,00' }]},
+  ],
+};
+
+// Injeta shows nas semanas do DB que ainda não têm shows
+function injetarShowsNasSemanas() {
+  // Mapeamento de semana do dashboard para número de semana do PDF
+  // Baseado no campo label da semana
+  const mapaSemanaPDF = {
+    '02 – 08 de março': 10,
+    '09 – 15 de março': 11,
+    '16 – 22 de março': 12,
+    '23 – 29 de março': 13,
+    '30': 14,
+    '01': 9,
+  };
+
+  DB.semanas.forEach(s => {
+    if (s.shows && s.shows.length > 0) return; // já tem shows, não sobrescreve
+    const label = s.label || '';
+    let semPDF = null;
+    for (const [key, num] of Object.entries(mapaSemanaPDF)) {
+      if (label.includes(key)) { semPDF = num; break; }
+    }
+    if (semPDF && SHOWS_MARCO_2026[semPDF]) {
+      s.shows = JSON.parse(JSON.stringify(SHOWS_MARCO_2026[semPDF]));
+    }
+  });
+}
+
 // ── INIT ──
 function iniciar(dadosNuvem) {
   if (dadosNuvem && dadosNuvem.semanas && dadosNuvem.semanas.length > 0) {
     DB = dadosNuvem;
   }
+  // Injeta shows nas semanas que ainda não têm
+  injetarShowsNasSemanas();
   currentWeek = DB.semanas.length - 1;
   render();
   recalcTudo();
@@ -1304,6 +1422,7 @@ function iniciar(dadosNuvem) {
   if (window._fbListen) {
     window._fbListen((dados) => {
       DB = dados;
+      injetarShowsNasSemanas();
       render();
       recalcTudo();
     });
