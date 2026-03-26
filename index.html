@@ -1059,8 +1059,8 @@ function setFiltro(f) {
 // Retorna noites filtradas
 function noitesFiltradas() {
   const todas = todasAsNoites();
-  if (filtroAtivo === 'mes')     return todas;
-  if (filtroAtivo === 'semana')  {
+  if (filtroAtivo === 'mes')    return todas;
+  if (filtroAtivo === 'semana') {
     const idx = parseInt(document.getElementById('sel_semana')?.value ?? currentWeek);
     return todas.filter(n => n._semanaIdx === idx);
   }
@@ -1070,7 +1070,17 @@ function noitesFiltradas() {
   }
   if (filtroAtivo === 'atracao') {
     const atr = document.getElementById('sel_atracao')?.value || '';
-    return todas.filter(n => n.bandas.some(b => b.nome === atr));
+    // Filtra noites que têm a atração E marca o custo específico da banda
+    return todas
+      .filter(n => n.bandas.some(b => b.nome === atr))
+      .map(n => ({
+        ...n,
+        _bandaFiltrada: n.bandas.find(b => b.nome === atr),
+        _custoFiltrado: (() => {
+          const b = n.bandas.find(x => x.nome === atr);
+          return b ? parseBR(b.cache) + getConsumo(b.nome) : 0;
+        })()
+      }));
   }
   return todas;
 }
@@ -1092,7 +1102,6 @@ function renderChartShows() {
   let labels = [], custos = [], couverts = [];
 
   if (chartPeriodo === 'mes') {
-    // Cada noite como um ponto, ordenado por data
     const sorted = [...todas].sort((a,b) => (a.data||'').localeCompare(b.data||''));
     sorted.forEach(n => {
       let custo = 0;
@@ -1104,7 +1113,6 @@ function renderChartShows() {
   }
 
   if (chartPeriodo === 'semana') {
-    // Agrupa por semana
     DB.semanas.forEach((s, si) => {
       let custo = 0, couvert = 0;
       (s.shows || []).forEach(n => {
@@ -1118,20 +1126,38 @@ function renderChartShows() {
   }
 
   if (chartPeriodo === 'dia') {
-    // Agrupa pelo dia da semana (Seg, Ter, Qua...) — soma de todas as ocorrências
-    const acum = {};
-    DIAS_SEMANA.forEach(d => { acum[d] = { custo:0, couvert:0 }; });
-    todas.forEach(n => {
-      const dia = getDiaSemana(n.data);
-      if (!dia) return;
-      n.bandas.forEach(b => { acum[dia].custo += parseBR(b.cache) + getConsumo(b.nome||''); });
-      acum[dia].couvert += parseBR(n.couvert);
-    });
-    DIAS_SEMANA.forEach(d => {
-      labels.push(d);
-      custos.push(acum[d].custo);
-      couverts.push(acum[d].couvert);
-    });
+    // Se tem um filtro de dia da semana ativo, mostra as últimas 4 ocorrências desse dia
+    // Caso contrário, mostra todos os dias da semana agrupados
+    if (filtroAtivo === 'dia') {
+      const diaSelec = document.getElementById('sel_dia')?.value || '';
+      const ocorrencias = todas
+        .filter(n => getDiaSemana(n.data) === diaSelec)
+        .slice(-4); // últimas 4
+      ocorrencias.forEach(n => {
+        let custo = 0;
+        n.bandas.forEach(b => { custo += parseBR(b.cache) + getConsumo(b.nome||''); });
+        labels.push(n.data || '—');
+        custos.push(custo);
+        couverts.push(parseBR(n.couvert));
+      });
+    } else {
+      // Sem filtro de dia: mostra todos os dias da semana agrupados
+      const acum = {};
+      DIAS_SEMANA.forEach(d => { acum[d] = { custo:0, couvert:0 }; });
+      todas.forEach(n => {
+        const dia = getDiaSemana(n.data);
+        if (!dia) return;
+        n.bandas.forEach(b => { acum[dia].custo += parseBR(b.cache) + getConsumo(b.nome||''); });
+        acum[dia].couvert += parseBR(n.couvert);
+      });
+      DIAS_SEMANA.forEach(d => {
+        if (acum[d].custo > 0 || acum[d].couvert > 0) {
+          labels.push(d);
+          custos.push(acum[d].custo);
+          couverts.push(acum[d].couvert);
+        }
+      });
+    }
   }
 
   chartShowsInst = new Chart(canvas, {
@@ -1139,8 +1165,8 @@ function renderChartShows() {
     data: {
       labels,
       datasets: [
-        { label:'Custo (Cachê + Consumo)', data:custos,   backgroundColor:'rgba(192,57,43,0.45)',  borderColor:'#c0392b', borderWidth:1.5, borderRadius:4 },
-        { label:'Couvert Arrecadado',      data:couverts, backgroundColor:'rgba(92,107,74,0.5)',   borderColor:'#5c6b4a', borderWidth:1.5, borderRadius:4 },
+        { label:'Custo (Cachê + Consumo)', data:custos,   backgroundColor:'rgba(192,57,43,0.45)', borderColor:'#c0392b', borderWidth:1.5, borderRadius:4 },
+        { label:'Couvert Arrecadado',      data:couverts, backgroundColor:'rgba(92,107,74,0.5)',  borderColor:'#5c6b4a', borderWidth:1.5, borderRadius:4 },
       ]
     },
     options: {
@@ -1249,10 +1275,11 @@ function renderShows() {
       const consumo = getConsumo(b.nome||'');
       const especial = Object.keys(CONSUMO_ESPECIAL).find(k => (b.nome||'').toLowerCase().includes(k.toLowerCase()));
       const custoTotal = parseBR(b.cache) + consumo;
+      const isFiltrada = filtroAtivo === 'atracao' && noite._bandaFiltrada?.nome === b.nome;
       return `
-        <div class="show-banda-row">
+        <div class="show-banda-row" style="${isFiltrada ? 'background:rgba(92,107,74,0.08);border-radius:8px;' : ''}">
           <div>
-            <div class="sb-label">Banda / Artista</div>
+            <div class="sb-label">Banda / Artista${isFiltrada ? ' <span style="color:var(--green);font-weight:600">★</span>' : ''}</div>
             <input class="inp-show" value="${b.nome||''}" placeholder="Nome da banda" oninput="updateBanda(${si},${ni},${bi},'nome',this.value)"/>
             ${especial ? `<div class="consumo-especial">⭐ Consumo especial: R$ ${CONSUMO_ESPECIAL[especial]}</div>` : ''}
           </div>
@@ -1260,7 +1287,7 @@ function renderShows() {
             <input class="inp-show" value="${b.cache||''}" placeholder="0,00" style="text-align:right" oninput="updateBanda(${si},${ni},${bi},'cache',this.value)"/>
           </div>
           <div><div class="sb-label">Consumo</div><div class="sb-val" style="padding:7px 0">R$ ${consumo.toFixed(2).replace('.',',')}</div></div>
-          <div><div class="sb-label">Custo Total</div><div class="sb-val" style="padding:7px 0;font-weight:500">R$ ${formatBR(custoTotal)}</div></div>
+          <div><div class="sb-label">Custo Total</div><div class="sb-val" style="padding:7px 0;font-weight:500;${isFiltrada?'color:var(--green)':''}">R$ ${formatBR(custoTotal)}</div></div>
           <button class="btn-del-show" onclick="removerBanda(${si},${ni},${bi})">✕</button>
         </div>`;
     }).join('');
@@ -1321,7 +1348,13 @@ function calcShowsKPIs(noitesList) {
   const lista = noitesList || todasAsNoites();
   let totalCusto = 0, totalCouvert = 0, totalShows = 0;
   lista.forEach(noite => {
-    noite.bandas.forEach(b => { totalCusto += parseBR(b.cache) + getConsumo(b.nome||''); totalShows++; });
+    // Se tem custo filtrado (filtro por atração), usa só o custo da banda específica
+    if (noite._custoFiltrado !== undefined) {
+      totalCusto += noite._custoFiltrado;
+      totalShows++;
+    } else {
+      noite.bandas.forEach(b => { totalCusto += parseBR(b.cache) + getConsumo(b.nome||''); totalShows++; });
+    }
     totalCouvert += parseBR(noite.couvert);
   });
   const lucro = totalCouvert - totalCusto;
