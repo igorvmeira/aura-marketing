@@ -57,17 +57,45 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;font
 .layout{display:flex;min-height:100vh;}
 
 /* SIDEBAR */
-.sidebar{width:210px;flex-shrink:0;background:var(--green);display:flex;flex-direction:column;padding:28px 0;position:sticky;top:0;height:100vh;}
-.logo-area{padding:0 20px 28px;border-bottom:1px solid rgba(255,255,255,0.1);margin-bottom:20px;}
-.logo-svg{width:130px;}
+.sidebar{width:210px;flex-shrink:0;background:var(--green);display:flex;flex-direction:column;padding:28px 0;position:sticky;top:0;height:100vh;transition:width .25s ease;}
+.sidebar.collapsed{width:58px;}
+.sidebar.collapsed .logo-area{padding:0 12px 20px;}
+.sidebar.collapsed .logo-svg{display:none;}
+.sidebar.collapsed .sidebar-sub{display:none;}
+.sidebar.collapsed .nav-label{display:none;}
+.sidebar.collapsed .nav-item{padding:12px;justify-content:center;}
+.sidebar.collapsed .sidebar-footer{padding:14px 10px 0;}
+.sidebar.collapsed .btn-side span{display:none;}
+.sidebar.collapsed .btn-side{padding:8px;justify-content:center;}
+.sidebar.collapsed .sync-text{display:none;}
+
+.logo-area{padding:0 20px 28px;border-bottom:1px solid rgba(255,255,255,0.1);margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;}
+.logo-svg{width:120px;transition:opacity .2s;}
 .sidebar-sub{font-size:0.55rem;letter-spacing:0.28em;color:rgba(255,255,255,0.4);text-transform:uppercase;margin-top:7px;}
 .nav-item{display:flex;align-items:center;gap:9px;padding:10px 20px;font-size:0.8rem;font-weight:400;color:rgba(255,255,255,0.58);cursor:pointer;border-left:2px solid transparent;transition:all .2s;letter-spacing:.02em;}
 .nav-item:hover{color:#fff;background:rgba(255,255,255,0.05);}
 .nav-item.active{color:#fff;border-left-color:#fff;background:rgba(255,255,255,0.09);font-weight:500;}
-.nav-ico{width:15px;height:15px;opacity:.8;}
+.nav-ico{width:15px;height:15px;opacity:.8;flex-shrink:0;}
 .sidebar-footer{margin-top:auto;padding:18px 20px 0;border-top:1px solid rgba(255,255,255,0.1);display:flex;flex-direction:column;gap:7px;}
 .btn-side{display:flex;align-items:center;justify-content:center;gap:6px;padding:8px 14px;border-radius:8px;font-family:'Outfit',sans-serif;font-size:0.73rem;font-weight:400;cursor:pointer;border:1px solid rgba(255,255,255,0.2);background:transparent;color:rgba(255,255,255,0.65);transition:all .2s;width:100%;}
 .btn-side:hover{background:rgba(255,255,255,0.1);color:#fff;}
+
+/* Botão recolher sidebar */
+.btn-collapse{width:26px;height:26px;border-radius:6px;border:1px solid rgba(255,255,255,0.2);background:transparent;cursor:pointer;color:rgba(255,255,255,0.6);display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0;}
+.btn-collapse:hover{background:rgba(255,255,255,0.15);color:#fff;}
+.sidebar.collapsed .btn-collapse{margin:0 auto;}
+
+/* BARRA MOBILE (bottom nav) */
+.mobile-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--green);z-index:50;padding:8px 0 max(8px,env(safe-area-inset-bottom));border-top:1px solid rgba(255,255,255,0.1);}
+.mobile-nav-inner{display:flex;justify-content:space-around;align-items:center;}
+.mobile-nav-item{display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px 8px;cursor:pointer;color:rgba(255,255,255,0.55);min-width:52px;transition:color .2s;}
+.mobile-nav-item.active{color:#fff;}
+.mobile-nav-item svg{width:20px;height:20px;}
+.mobile-nav-item span{font-size:0.6rem;letter-spacing:.02em;}
+
+/* Botão salvar mobile */
+.mobile-save{position:fixed;bottom:80px;right:16px;z-index:49;background:var(--green);color:#fff;border:none;border-radius:50px;padding:10px 18px;font-family:'Outfit',sans-serif;font-size:0.75rem;font-weight:500;cursor:pointer;display:none;align-items:center;gap:6px;box-shadow:0 4px 16px rgba(92,107,74,0.4);}
+.mobile-save.show-mobile{display:flex;}
 
 /* MAIN */
 .main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
@@ -77,7 +105,7 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;font
 .week-nav{display:flex;align-items:center;gap:8px;}
 .wbtn{width:30px;height:30px;border-radius:7px;border:1px solid var(--border);background:var(--surface2);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--muted);transition:all .2s;font-size:0.85rem;}
 .wbtn:hover{background:var(--green);color:#fff;border-color:var(--green);}
-.week-lbl{font-size:0.82rem;font-weight:500;color:var(--text);min-width:220px;text-align:center;}
+.week-lbl{font-size:0.82rem;font-weight:500;color:var(--text);min-width:180px;text-align:center;}
 .topbar-right{display:flex;align-items:center;gap:8px;}
 .btn{display:flex;align-items:center;gap:5px;padding:7px 14px;border-radius:7px;font-family:'Outfit',sans-serif;font-size:0.75rem;font-weight:500;cursor:pointer;border:none;transition:all .2s;}
 .btn-primary{background:var(--green);color:#fff;}
@@ -91,6 +119,26 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;font
 
 /* SECTION TITLE */
 .sec{font-size:0.6rem;font-weight:600;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);margin-bottom:13px;margin-top:4px;}
+
+/* MOBILE RESPONSIVE */
+@media(max-width:768px){
+  .sidebar{display:none!important;}
+  .mobile-nav{display:block;}
+  .mobile-save{display:flex;}
+  .content{padding:16px 14px 90px;}
+  .topbar{padding:10px 14px;}
+  .topbar-right .btn-ghost{display:none;}
+  .week-lbl{min-width:140px;font-size:0.78rem;}
+  .shows-kpi-grid,.resumo-grid{grid-template-columns:1fr 1fr;}
+  .plat-grid{grid-template-columns:1fr;}
+  .camp-grid{grid-template-columns:1fr;}
+  .chart-grid{grid-template-columns:1fr;}
+  .horarios-grid{grid-template-columns:1fr 1fr;}
+  .show-banda-row{grid-template-columns:1fr 1fr;grid-template-rows:auto auto;}
+  .show-banda-row > div:nth-child(3),.show-banda-row > div:nth-child(4){display:none;}
+  .domingo-resumo{gap:12px;}
+}
+
 
 /* PLATAFORMAS */
 .plat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:18px;}
@@ -217,58 +265,91 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;font
 <div class="layout">
 
 <!-- SIDEBAR -->
-<aside class="sidebar">
+<aside class="sidebar" id="sidebar">
   <div class="logo-area">
-    <svg class="logo-svg" viewBox="0 0 150 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <!-- A -->
-      <polyline points="2,42 15,14 28,42" stroke="white" stroke-width="1.6" fill="none" stroke-linejoin="round"/>
-      <line x1="8" y1="34" x2="22" y2="34" stroke="white" stroke-width="1.6"/>
-      <!-- U -->
-      <path d="M36,14 L36,33 Q36,42 45,42 Q54,42 54,33 L54,14" stroke="white" stroke-width="1.6" fill="none"/>
-      <!-- R -->
-      <line x1="62" y1="42" x2="62" y2="14" stroke="white" stroke-width="1.6"/>
-      <path d="M62,14 L73,14 Q80,14 80,23 Q80,32 73,32 L62,32" stroke="white" stroke-width="1.6" fill="none"/>
-      <line x1="72" y1="32" x2="81" y2="42" stroke="white" stroke-width="1.6"/>
-      <!-- A inv -->
-      <polyline points="90,42 103,14 116,42" stroke="white" stroke-width="1.6" fill="none" stroke-linejoin="round"/>
-      <line x1="96" y1="34" x2="110" y2="34" stroke="white" stroke-width="1.6"/>
-      <line x1="103" y1="42" x2="116" y2="42" stroke="white" stroke-width="1.6"/>
-    </svg>
-    <div class="sidebar-sub">Lounge Bar</div>
+    <div>
+      <svg class="logo-svg" viewBox="0 0 150 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <polyline points="2,42 15,14 28,42" stroke="white" stroke-width="1.6" fill="none" stroke-linejoin="round"/>
+        <line x1="8" y1="34" x2="22" y2="34" stroke="white" stroke-width="1.6"/>
+        <path d="M36,14 L36,33 Q36,42 45,42 Q54,42 54,33 L54,14" stroke="white" stroke-width="1.6" fill="none"/>
+        <line x1="62" y1="42" x2="62" y2="14" stroke="white" stroke-width="1.6"/>
+        <path d="M62,14 L73,14 Q80,14 80,23 Q80,32 73,32 L62,32" stroke="white" stroke-width="1.6" fill="none"/>
+        <line x1="72" y1="32" x2="81" y2="42" stroke="white" stroke-width="1.6"/>
+        <polyline points="90,42 103,14 116,42" stroke="white" stroke-width="1.6" fill="none" stroke-linejoin="round"/>
+        <line x1="96" y1="34" x2="110" y2="34" stroke="white" stroke-width="1.6"/>
+        <line x1="103" y1="42" x2="116" y2="42" stroke="white" stroke-width="1.6"/>
+      </svg>
+      <div class="sidebar-sub">Lounge Bar</div>
+    </div>
+    <button class="btn-collapse" onclick="toggleSidebar()" title="Recolher menu">
+      <svg id="collapseIcon" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
   </div>
   <nav>
     <div class="nav-item active" onclick="showPage('dashboard',this)">
       <svg class="nav-ico" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
-      Dashboard
+      <span class="nav-label">Dashboard</span>
     </div>
     <div class="nav-item" onclick="showPage('graficos',this)">
       <svg class="nav-ico" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-      Gráficos
+      <span class="nav-label">Gráficos</span>
     </div>
     <div class="nav-item" onclick="showPage('metricas',this)">
       <svg class="nav-ico" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
-      Métricas
+      <span class="nav-label">Métricas</span>
     </div>
     <div class="nav-item" onclick="showPage('shows',this)">
       <svg class="nav-ico" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
-      Shows & Bandas
+      <span class="nav-label">Shows & Bandas</span>
     </div>
     <div class="nav-item" onclick="showPage('domingos',this)">
       <svg class="nav-ico" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-      Domingos
+      <span class="nav-label">Domingos</span>
     </div>
   </nav>
   <div class="sidebar-footer">
     <div id="syncStatus" style="display:flex;align-items:center;gap:6px;font-size:0.7rem;color:rgba(255,255,255,0.5);padding:4px 0">
       <span id="syncDot" style="width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,0.3);flex-shrink:0"></span>
-      <span id="syncMsg">Conectando...</span>
+      <span id="syncMsg" class="sync-text">Conectando...</span>
     </div>
     <button class="btn-side" onclick="salvarNuvem()">
       <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v14a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-      Salvar na nuvem
+      <span>Salvar na nuvem</span>
     </button>
   </div>
 </aside>
+
+<!-- MOBILE NAV -->
+<nav class="mobile-nav">
+  <div class="mobile-nav-inner">
+    <div class="mobile-nav-item active" id="mnav_dashboard" onclick="showPage('dashboard',this);setMobileNav('dashboard')">
+      <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      <span>Dashboard</span>
+    </div>
+    <div class="mobile-nav-item" id="mnav_graficos" onclick="showPage('graficos',this);setMobileNav('graficos')">
+      <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      <span>Gráficos</span>
+    </div>
+    <div class="mobile-nav-item" id="mnav_metricas" onclick="showPage('metricas',this);setMobileNav('metricas')">
+      <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+      <span>Métricas</span>
+    </div>
+    <div class="mobile-nav-item" id="mnav_shows" onclick="showPage('shows',this);setMobileNav('shows')">
+      <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+      <span>Shows</span>
+    </div>
+    <div class="mobile-nav-item" id="mnav_domingos" onclick="showPage('domingos',this);setMobileNav('domingos')">
+      <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      <span>Domingos</span>
+    </div>
+  </div>
+</nav>
+
+<!-- BOTÃO SALVAR MOBILE -->
+<button class="mobile-save show-mobile" onclick="salvarNuvem()">
+  <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v14a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+  Salvar
+</button>
 
 <!-- MAIN -->
 <div class="main">
@@ -887,7 +968,8 @@ function showPage(id, el) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('page-' + id).classList.add('active');
-  if (el) el.classList.add('active');
+  if (el && el.classList && el.classList.contains('nav-item')) el.classList.add('active');
+  setMobileNav(id);
   if (id === 'graficos') renderGraficos();
   if (id === 'metricas') renderMetricas();
   if (id === 'shows')    { renderShows(); renderRanking(); renderChartShows(); }
@@ -1913,6 +1995,26 @@ function injetarShowsNasSemanas() {
 }
 
 // ── INIT ──
+// ════════════════════════════════
+// SIDEBAR COLLAPSE + MOBILE NAV
+// ════════════════════════════════
+function toggleSidebar() {
+  const sb = document.getElementById('sidebar');
+  const icon = document.getElementById('collapseIcon');
+  sb.classList.toggle('collapsed');
+  const collapsed = sb.classList.contains('collapsed');
+  // Troca ícone de seta
+  icon.innerHTML = collapsed
+    ? '<polyline points="9 18 15 12 9 6"/>'   // seta direita
+    : '<polyline points="15 18 9 12 15 6"/>'; // seta esquerda
+}
+
+function setMobileNav(id) {
+  document.querySelectorAll('.mobile-nav-item').forEach(el => el.classList.remove('active'));
+  const el = document.getElementById('mnav_' + id);
+  if (el) el.classList.add('active');
+}
+
 // Desativa datalabels globalmente — só o gráfico de shows usa explicitamente
 Chart.defaults.plugins.datalabels = { display: false };
 
