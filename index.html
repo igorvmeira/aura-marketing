@@ -2243,23 +2243,46 @@ function setMobileNav(id) {
 Chart.defaults.plugins.datalabels = { display: false };
 
 function iniciar(dadosNuvem) {
-  if (dadosNuvem && dadosNuvem.semanas && dadosNuvem.semanas.length > 0) {
-    DB = dadosNuvem;
-  }
-  initMeses();
-  injetarShowsNasSemanas();
-  currentWeek = DB.semanas.length - 1;
-  render();
-  recalcTudo();
-  setSyncStatus('online');
-  if (window._fbListen) {
-    window._fbListen((dados) => {
-      DB = dados;
-      initMeses();
-      injetarShowsNasSemanas();
+  try {
+    if (dadosNuvem && dadosNuvem.semanas && dadosNuvem.semanas.length > 0) {
+      DB = dadosNuvem;
+    }
+    // Garante estrutura mínima
+    if (!DB.semanas || DB.semanas.length === 0) DB.semanas = [semanaVazia()];
+    initMeses();
+    injetarShowsNasSemanas();
+    currentWeek = Math.max(0, DB.semanas.length - 1);
+    render();
+    recalcTudo();
+    setSyncStatus('online');
+  } catch(err) {
+    console.error('Erro ao iniciar:', err);
+    setSyncStatus('error');
+    // Tenta iniciar com dados vazios
+    try {
+      DB.semanas = DB.semanas && DB.semanas.length > 0 ? DB.semanas : [semanaVazia()];
+      currentWeek = 0;
       render();
       recalcTudo();
-      if (paginaAtiva === 'shows') { renderMesTabs(); renderShows(); renderRanking(); renderChartShows(); }
+    } catch(e) { console.error('Erro crítico:', e); }
+  }
+
+  // Escuta mudanças em tempo real
+  if (window._fbListen && !window._fbListening) {
+    window._fbListening = true;
+    window._fbListen((dados) => {
+      try {
+        if (!dados || !dados.semanas) return;
+        DB = dados;
+        initMeses();
+        injetarShowsNasSemanas();
+        currentWeek = Math.min(currentWeek, DB.semanas.length - 1);
+        render();
+        recalcTudo();
+        if (paginaAtiva === 'shows') { renderMesTabs(); renderShows(); renderRanking(); renderChartShows(); }
+        if (paginaAtiva === 'domingos') renderDomingos();
+        setSyncStatus('online');
+      } catch(err) { console.error('Erro ao atualizar dados:', err); }
     });
   }
 }
@@ -2268,30 +2291,30 @@ function iniciar(dadosNuvem) {
 document.addEventListener('input', () => autoSave(), true);
 
 // Aguarda Firebase carregar
-if (window._fbReady) {
-  // já carregou
-  window._fbSave && window._fbListen
-    ? (async () => {
-        setSyncStatus('connecting');
-        // Carrega dados existentes
-        window._fbListen((dados) => iniciar(dados));
-        // Timeout caso não haja dados ainda
-        setTimeout(() => {
-          if (DB.semanas.length === 0) iniciar(null);
-        }, 3000);
-      })()
-    : iniciar(null);
-} else {
-  window.addEventListener('firebase-ready', () => {
-    window._fbListen((dados) => iniciar(dados));
+function tentarCarregarFirebase() {
+  if (window._fbListen) {
+    setSyncStatus('connecting');
+    let carregou = false;
+    window._fbListen((dados) => {
+      if (!carregou) { carregou = true; iniciar(dados); }
+    });
+    // Fallback se Firebase demorar
     setTimeout(() => {
-      if (!DB.semanas || DB.semanas.length === 0) iniciar(null);
-    }, 3000);
-  });
-  // Inicia sem Firebase por segurança
+      if (!carregou) { carregou = true; iniciar(null); }
+    }, 4000);
+  } else {
+    iniciar(null);
+  }
+}
+
+if (window._fbReady) {
+  tentarCarregarFirebase();
+} else {
+  window.addEventListener('firebase-ready', tentarCarregarFirebase);
+  // Fallback final se Firebase não carregar
   setTimeout(() => {
     if (!DB.semanas || DB.semanas.length === 0) iniciar(null);
-  }, 5000);
+  }, 6000);
 }
 </script>
 </script>
