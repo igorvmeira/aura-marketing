@@ -512,7 +512,7 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;font
           </button>
           <button class="btn btn-ghost" onclick="carregarAgendaPDF()">
             <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-            Carregar agenda março
+            Carregar agenda
           </button>
           <label class="btn btn-ghost" style="cursor:pointer">
             <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
@@ -1578,15 +1578,14 @@ function carregarAgendaPDF() {
   const s = DB.semanas[currentWeek];
   const label = (s.label || '').toLowerCase().replace(/[–—]/g, '-');
 
-  // Extrai o primeiro número do label (dia inicial da semana)
+  const eMarca = label.includes('março') || label.includes('marco');
+  const eAbril = label.includes('abril');
+
   const match = label.match(/(\d+)/);
   const diaInicial = match ? parseInt(match[1]) : null;
 
-  // Verifica se é março
-  const eMarca = label.includes('março') || label.includes('marco');
-  const eFevereiro = label.includes('fevereiro');
-
   let semPDF = null;
+  let fonte = null;
 
   if (eMarca && diaInicial !== null) {
     if (diaInicial <= 1)  semPDF = 9;
@@ -1595,18 +1594,26 @@ function carregarAgendaPDF() {
     else if (diaInicial <= 22) semPDF = 12;
     else if (diaInicial <= 29) semPDF = 13;
     else semPDF = 14;
+    fonte = SHOWS_MARCO_2026;
+  } else if (eAbril && diaInicial !== null) {
+    if (diaInicial <= 5)  semPDF = 14;
+    else if (diaInicial <= 12) semPDF = 15;
+    else if (diaInicial <= 19) semPDF = 16;
+    else if (diaInicial <= 26) semPDF = 17;
+    else semPDF = 18;
+    fonte = SHOWS_ABRIL_2026;
   }
 
-  if (semPDF && SHOWS_MARCO_2026[semPDF]) {
+  if (semPDF && fonte && fonte[semPDF]) {
     if (s.shows && s.shows.length > 0) {
-      if (!confirm('Esta semana já tem noites cadastradas. Substituir pela agenda de março?')) return;
+      if (!confirm('Esta semana já tem noites cadastradas. Substituir pela agenda?')) return;
     }
-    s.shows = JSON.parse(JSON.stringify(SHOWS_MARCO_2026[semPDF]));
+    s.shows = JSON.parse(JSON.stringify(fonte[semPDF]));
     renderShows();
     autoSave();
-    toast('Agenda de março carregada! ✅');
+    toast('Agenda carregada! ✅');
   } else {
-    toast('Esta semana não é de março ou não tem agenda. Verifique o período.');
+    toast('Esta semana não é de março ou abril, ou não tem agenda.');
   }
 }
 function importarExcelShows(ev) {
@@ -1976,7 +1983,90 @@ const SHOWS_MARCO_2026 = {
   ],
 };
 
-// Injeta shows nas semanas baseado no label da semana
+// ════ AGENDA ABRIL 2026 ════
+const SHOWS_ABRIL_2026 = {
+  14: [ // Semana 14 (01–05/04)
+    { id:101, data:'Quarta-feira, 01/04', couvert:'', bandas:[
+      { nome:'Tiago Mendes', cache:'250,00' }]},
+    { id:102, data:'Quinta-feira, 02/04', couvert:'', bandas:[
+      { nome:'Gabriel Silva', cache:'500,00' }]},
+    { id:103, data:'Sexta-feira, 03/04', couvert:'', bandas:[
+      { nome:'Gabriel Silva', cache:'550,00' },
+      { nome:'DJ Froes',      cache:'150,00' }]},
+    { id:104, data:'Sábado, 04/04', couvert:'', bandas:[
+      { nome:'DJ Lessa',   cache:'250,00'   },
+      { nome:'Jarlan',     cache:'1.000,00' },
+      { nome:'Brankinho',  cache:'600,00'   }]},
+    { id:105, data:'Domingo, 05/04', couvert:'', bandas:[
+      { nome:'Gabriel Silva', cache:'650,00'   },
+      { nome:'Ser Samba',     cache:'3.000,00' }]},
+  ],
+  15: [ // Semana 15 (07–12/04)
+    { id:106, data:'Terça-feira, 07/04', couvert:'', bandas:[
+      { nome:'Brankinho', cache:'250,00' }]},
+    { id:107, data:'Quarta-feira, 08/04', couvert:'', bandas:[
+      { nome:'Tiago Mendes', cache:'250,00' }]},
+    { id:108, data:'Quinta-feira, 09/04', couvert:'', bandas:[
+      { nome:'Flavio Linns', cache:'450,00' }]},
+    { id:109, data:'Sexta-feira, 10/04', couvert:'', bandas:[
+      { nome:'Gabriel Silva', cache:'650,00'   },
+      { nome:'Ser Samba',     cache:'3.000,00' }]},
+    { id:110, data:'Sábado, 11/04', couvert:'', bandas:[
+      { nome:'Ser Samba',     cache:'2.500,00' },
+      { nome:'Vitinha',       cache:'800,00'   },
+      { nome:'DJ Lessa',      cache:'250,00'   },
+      { nome:'Badalação',     cache:'450,00'   },
+      { nome:'Flavio Linns',  cache:'650,00'   }]},
+    { id:111, data:'Domingo, 12/04', couvert:'', bandas:[
+      { nome:'Vitinha',   cache:'800,00' },
+      { nome:'Brankinho', cache:'600,00' }]},
+  ],
+  16: [ // Semana 16 (14–19/04)
+    { id:112, data:'Terça-feira, 14/04', couvert:'', bandas:[
+      { nome:'Well Freitas', cache:'350,00' }]},
+    { id:113, data:'Quarta-feira, 15/04', couvert:'', bandas:[
+      { nome:'Robinho', cache:'300,00' }]},
+    { id:114, data:'Quinta-feira, 16/04', couvert:'', bandas:[
+      { nome:'Flavio Linns', cache:'450,00' }]},
+    { id:115, data:'Sexta-feira, 17/04', couvert:'', bandas:[
+      { nome:'Gabriel Silva', cache:'650,00' },
+      { nome:'DJ Gil Mendes', cache:'400,00' },
+      { nome:'DJ Froes',      cache:'150,00' }]},
+    { id:116, data:'Sábado, 18/04', couvert:'', bandas:[
+      { nome:'DJ Lessa',  cache:'250,00'   },
+      { nome:'Brankinho', cache:'600,00'   },
+      { nome:'Jarlan',    cache:'1.000,00' }]},
+    { id:117, data:'Domingo, 19/04', couvert:'', bandas:[
+      { nome:'Ser Samba',    cache:'3.000,00' },
+      { nome:'Andrezinho',   cache:'800,00'   }]},
+  ],
+  17: [ // Semana 17 (20–26/04)
+    { id:118, data:'Segunda-feira, 20/04', couvert:'', bandas:[
+      { nome:'Gabriel Silva', cache:'650,00' }]},
+    { id:119, data:'Terça-feira, 21/04', couvert:'', bandas:[
+      { nome:'Brankinho', cache:'250,00' }]},
+    { id:120, data:'Quinta-feira, 23/04', couvert:'', bandas:[
+      { nome:'Gustavo Guimarães', cache:'450,00' }]},
+    { id:121, data:'Sexta-feira, 24/04', couvert:'', bandas:[
+      { nome:'Gabriel Silva', cache:'650,00' },
+      { nome:'Grupo Zero4',   cache:'500,00' }]},
+    { id:122, data:'Sábado, 25/04', couvert:'', bandas:[
+      { nome:'DJ Froes',     cache:'150,00' },
+      { nome:'Vitinha',      cache:'800,00' },
+      { nome:'Flavio Linns', cache:'650,00' }]},
+    { id:123, data:'Domingo, 26/04', couvert:'', bandas:[
+      { nome:'Ser Samba',  cache:'3.000,00' },
+      { nome:'Grupo Zero4',cache:'500,00'   }]},
+  ],
+  18: [ // Semana 18 (28–30/04)
+    { id:124, data:'Terça-feira, 28/04', couvert:'', bandas:[
+      { nome:'Well Freitas', cache:'350,00' }]},
+    { id:125, data:'Quarta-feira, 29/04', couvert:'', bandas:[
+      { nome:'Robinho', cache:'300,00' }]},
+    { id:126, data:'Quinta-feira, 30/04', couvert:'', bandas:[
+      { nome:'Flavio Linns', cache:'650,00' }]},
+  ],
+};
 function injetarShowsNasSemanas() {
   const mapaSemanaPDF = [
     { keys: ['01 de março', '01 – 07 de março', '01/03'], num: 9  },
