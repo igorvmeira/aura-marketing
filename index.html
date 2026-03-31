@@ -761,8 +761,7 @@ function renderCamps(s) {
       camposHTML = `
         <div class="crow"><span class="cl">Investimento</span><span class="cv">R$ <input class="e er" value="${c.investimento||''}" style="width:70px" data-f="investimento" data-i="${i}" onclick="e(event)" oninput="uc(this,${i})"/></span></div>
         <div class="crow"><span class="cl">Retorno</span><span class="cv">R$ <input class="e er" value="${c.retorno||''}" style="width:70px" data-f="retorno" data-i="${i}" onclick="e(event)" oninput="uc(this,${i})"/></span></div>
-        <div class="crow"><span class="cl">Reservas Feitas</span><span class="cv"><input class="e er" value="${c.reservas_feitas||''}" style="width:40px" data-f="reservas_feitas" data-i="${i}" onclick="e(event)" oninput="uc(this,${i})"/></span></div>
-        <div class="crow"><span class="cl">Receita Garantida</span><span class="cv">R$ <input class="e er" value="${c.receita_garantida||''}" style="width:70px" data-f="receita_garantida" data-i="${i}" onclick="e(event)" oninput="uc(this,${i})"/></span></div>`;
+        <div class="crow"><span class="cl">Reservas Feitas</span><span class="cv"><input class="e er" value="${c.reservas_feitas||''}" style="width:40px" data-f="reservas_feitas" data-i="${i}" onclick="e(event)" oninput="uc(this,${i})"/></span></div>`;
     } else if (c.tipo === 'pagode') {
       camposHTML = `
         <div class="crow"><span class="cl">Investimento</span><span class="cv">R$ <input class="e er" value="${c.investimento||''}" style="width:70px" data-f="investimento" data-i="${i}" onclick="e(event)" oninput="uc(this,${i})"/></span></div>
