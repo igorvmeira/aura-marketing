@@ -244,7 +244,13 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;font
 .filtro-btn:hover{color:var(--text);}
 .filtro-ativo{background:var(--surface)!important;color:var(--green)!important;font-weight:500;box-shadow:0 1px 3px rgba(0,0,0,0.08);}
 
-/* DOMINGOS */
+/* MÊS TABS */
+.mes-tab{padding:7px 16px;border-radius:8px;font-family:'Outfit',sans-serif;font-size:0.78rem;font-weight:400;cursor:pointer;border:1px solid var(--border);background:var(--surface);color:var(--muted);transition:all .2s;display:flex;align-items:center;gap:6px;}
+.mes-tab:hover{border-color:var(--green);color:var(--green);}
+.mes-tab.ativo{background:var(--green);color:#fff;border-color:var(--green);font-weight:500;}
+.mes-tab-del{width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.7rem;opacity:0.6;transition:opacity .2s;}
+.mes-tab-del:hover{opacity:1;}
+
 .domingo-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);margin-bottom:14px;}
 .domingo-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
 .domingo-titulo{font-size:0.9rem;font-weight:500;display:flex;align-items:center;gap:8px;}
@@ -471,6 +477,7 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;font
     <!-- ═══ SHOWS & BANDAS ═══ -->
     <div class="page" id="page-shows">
 
+      <!-- KPIs do mês selecionado -->
       <div class="sec" id="shows_kpi_titulo">Resumo — Shows & Bandas</div>
       <div class="shows-kpi-grid">
         <div class="kpi-card">
@@ -492,18 +499,14 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;font
         </div>
       </div>
 
-      <!-- Filtros lista + ações -->
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap;justify-content:space-between">
-        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-          <div style="display:flex;background:var(--surface2);border:1px solid var(--border);border-radius:8px;overflow:hidden">
-            <button id="filtro_mes"     class="filtro-btn filtro-ativo" onclick="setFiltro('mes')">Mês inteiro</button>
-            <button id="filtro_semana"  class="filtro-btn"              onclick="setFiltro('semana')">Por semana</button>
-            <button id="filtro_dia"     class="filtro-btn"              onclick="setFiltro('dia')">Por dia da semana</button>
-            <button id="filtro_atracao" class="filtro-btn"              onclick="setFiltro('atracao')">Por atração</button>
-          </div>
-          <select id="sel_semana"  class="inp-show" style="display:none;width:auto;padding:7px 12px" onchange="renderShows()"></select>
-          <select id="sel_dia"     class="inp-show" style="display:none;width:auto;padding:7px 12px" onchange="renderShows()"></select>
-          <select id="sel_atracao" class="inp-show" style="display:none;width:auto;padding:7px 12px" onchange="renderShows()"></select>
+      <!-- Abas de meses -->
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap;justify-content:space-between">
+        <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center">
+          <div id="mesTabs" style="display:flex;gap:4px;flex-wrap:wrap"></div>
+          <button class="btn btn-ghost" onclick="addMes()" style="font-size:0.72rem">
+            <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Novo mês
+          </button>
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
           <button class="btn btn-primary" onclick="addNoite()">
@@ -522,12 +525,25 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;font
         </div>
       </div>
 
+      <!-- Filtros dentro do mês -->
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:16px">
+        <div style="display:flex;background:var(--surface2);border:1px solid var(--border);border-radius:8px;overflow:hidden">
+          <button id="filtro_mes"     class="filtro-btn filtro-ativo" onclick="setFiltro('mes')">Mês inteiro</button>
+          <button id="filtro_semana"  class="filtro-btn"              onclick="setFiltro('semana')">Por semana</button>
+          <button id="filtro_dia"     class="filtro-btn"              onclick="setFiltro('dia')">Por dia da semana</button>
+          <button id="filtro_atracao" class="filtro-btn"              onclick="setFiltro('atracao')">Por atração</button>
+        </div>
+        <select id="sel_semana"  class="inp-show" style="display:none;width:auto;padding:7px 12px" onchange="renderShows()"></select>
+        <select id="sel_dia"     class="inp-show" style="display:none;width:auto;padding:7px 12px" onchange="renderShows()"></select>
+        <select id="sel_atracao" class="inp-show" style="display:none;width:auto;padding:7px 12px" onchange="renderShows()"></select>
+      </div>
+
       <!-- Gráfico de desempenho -->
       <div class="sec">Gráfico — Couvert vs Custo</div>
       <div style="display:flex;gap:8px;margin-bottom:12px">
         <div style="display:flex;background:var(--surface2);border:1px solid var(--border);border-radius:8px;overflow:hidden">
-          <button id="gchart_mes"    class="filtro-btn filtro-ativo" onclick="setChartPeriodo('mes')">Mensal (por noite)</button>
-          <button id="gchart_semana" class="filtro-btn"              onclick="setChartPeriodo('semana')">Semanal</button>
+          <button id="gchart_mes"    class="filtro-btn filtro-ativo" onclick="setChartPeriodo('mes')">Por noite</button>
+          <button id="gchart_semana" class="filtro-btn"              onclick="setChartPeriodo('semana')">Por semana</button>
           <button id="gchart_dia"    class="filtro-btn"              onclick="setChartPeriodo('dia')">Por dia da semana</button>
         </div>
       </div>
@@ -938,7 +954,7 @@ function changeWeek(d) {
   render();
   recalcTudo();
   // Atualiza a aba que estiver aberta
-  if (paginaAtiva === 'shows')    { renderShows(); renderRanking(); renderChartShows(); }
+  if (paginaAtiva === 'shows')    { renderMesTabs(); renderShows(); renderRanking(); renderChartShows(); }
   if (paginaAtiva === 'domingos') { renderDomingos(); }
   if (paginaAtiva === 'graficos') renderGraficos();
   if (paginaAtiva === 'metricas') renderMetricas();
@@ -972,7 +988,7 @@ function showPage(id, el) {
   setMobileNav(id);
   if (id === 'graficos') renderGraficos();
   if (id === 'metricas') renderMetricas();
-  if (id === 'shows')    { renderShows(); renderRanking(); renderChartShows(); }
+  if (id === 'shows')    { renderMesTabs(); renderShows(); renderRanking(); renderChartShows(); }
   if (id === 'domingos') { renderDomingos(); }
 }
 
@@ -1150,20 +1166,95 @@ function getConsumoEfetivo(b) {
 
 // Retorna TODAS as noites de TODAS as semanas
 function todasAsNoites() {
-  const noites = [];
-  DB.semanas.forEach((s, si) => {
-    (s.shows || []).forEach((noite, ni) => {
-      noites.push({ ...noite, _semanaIdx: si, _noiteIdx: ni, _semanaLabel: s.label || `Semana ${si+1}` });
-    });
-  });
-  return noites;
+  const m = getMesAtivo();
+  if (!m) return [];
+  return (m.noites || []).map((n, ni) => ({ ...n, _semanaIdx: mesAtivo, _noiteIdx: ni, _semanaLabel: m.nome }));
 }
 
-// Retorna noites da semana atual
+// Retorna noites do mês ativo
 function showsDataSemana() {
-  const s = DB.semanas[currentWeek];
-  if (!s.shows) s.shows = [];
-  return s.shows;
+  const m = getMesAtivo();
+  if (!m.noites) m.noites = [];
+  return m.noites;
+}
+
+// ════════════════════════════════
+// GESTÃO DE MESES (Shows)
+// ════════════════════════════════
+
+// DB.meses = [{ id, nome, noites:[] }, ...]
+let mesAtivo = 0; // índice do mês atual
+
+function initMeses() {
+  if (!DB.meses) {
+    // Migra dados antigos de shows das semanas para o mês de Março
+    const noitesMigradas = [];
+    DB.semanas.forEach(s => {
+      if (s.shows && s.shows.length > 0) {
+        s.shows.forEach(n => noitesMigradas.push(n));
+        s.shows = []; // limpa das semanas
+      }
+    });
+    DB.meses = [
+      { id: 'marco2026',  nome: 'Março 2026',  noites: noitesMigradas },
+      { id: 'abril2026',  nome: 'Abril 2026',   noites: [] },
+    ];
+    mesAtivo = 0;
+  }
+  // Garante que abril tem a agenda pré-carregada se ainda estiver vazio
+  const abril = DB.meses.find(m => m.id === 'abril2026');
+  if (abril && abril.noites.length === 0) {
+    const todasAbril = Object.values(SHOWS_ABRIL_2026).flat();
+    abril.noites = JSON.parse(JSON.stringify(todasAbril));
+  }
+  if (mesAtivo >= DB.meses.length) mesAtivo = DB.meses.length - 1;
+}
+
+function getMesAtivo() {
+  return DB.meses[mesAtivo];
+}
+
+function addMes() {
+  const nome = prompt('Nome do mês (ex: Maio 2026):');
+  if (!nome) return;
+  const id = nome.toLowerCase().replace(/\s+/g,'').replace(/[^a-z0-9]/g,'');
+  DB.meses.push({ id, nome, noites: [] });
+  mesAtivo = DB.meses.length - 1;
+  renderMesTabs();
+  renderShows();
+  autoSave();
+}
+
+function removerMes(idx) {
+  if (DB.meses.length <= 1) { toast('Não é possível remover o único mês.'); return; }
+  if (!confirm(`Remover "${DB.meses[idx].nome}" e todas as suas noites?`)) return;
+  DB.meses.splice(idx, 1);
+  mesAtivo = Math.max(0, mesAtivo - 1);
+  renderMesTabs();
+  renderShows();
+  autoSave();
+}
+
+function selectMes(idx) {
+  mesAtivo = idx;
+  renderMesTabs();
+  // Reset filtros
+  filtroAtivo = 'mes';
+  document.querySelectorAll('.filtro-btn[id^="filtro_"]').forEach(b => b.classList.remove('filtro-ativo'));
+  const fm = document.getElementById('filtro_mes');
+  if (fm) fm.classList.add('filtro-ativo');
+  ['sel_semana','sel_dia','sel_atracao'].forEach(id => { const el = document.getElementById(id); if(el) el.style.display='none'; });
+  renderShows();
+}
+
+function renderMesTabs() {
+  const cont = document.getElementById('mesTabs');
+  if (!cont) return;
+  cont.innerHTML = DB.meses.map((m, i) => `
+    <div class="mes-tab ${i === mesAtivo ? 'ativo' : ''}" onclick="selectMes(${i})">
+      ${m.nome}
+      ${DB.meses.length > 1 ? `<span class="mes-tab-del" onclick="event.stopPropagation();removerMes(${i})">✕</span>` : ''}
+    </div>`).join('');
 }
 
 // Dias da semana em ordem
@@ -1194,8 +1285,9 @@ function setFiltro(f) {
   if (f === 'semana') {
     const sel = document.getElementById('sel_semana');
     sel.style.display = '';
-    sel.innerHTML = DB.semanas.map((s,i) => `<option value="${i}">${s.label||'Semana '+(i+1)}</option>`).join('');
-    sel.value = currentWeek;
+    // Extrai semanas únicas das datas das noites (por prefixo de data)
+    const semanas = extrairSemanasDasNoites();
+    sel.innerHTML = semanas.map((s,i) => `<option value="${i}">${s.label}</option>`).join('');
   }
   if (f === 'dia') {
     const sel = document.getElementById('sel_dia');
@@ -1213,12 +1305,31 @@ function setFiltro(f) {
 }
 
 // Retorna noites filtradas
+// Agrupa noites por semana baseado no dia da data
+function extrairSemanasDasNoites() {
+  const todas = todasAsNoites();
+  const semanas = {};
+  todas.forEach(n => {
+    const m = (n.data || '').match(/(\d{2})\/(\d{2})/);
+    if (!m) return;
+    const dia = parseInt(m[1]);
+    const semNum = Math.ceil(dia / 7);
+    const key = `sem${semNum}`;
+    if (!semanas[key]) semanas[key] = { key, label:`Semana ${semNum} — ${getMesAtivo().nome}`, datas:[] };
+    if (!semanas[key].datas.includes(n.data)) semanas[key].datas.push(n.data);
+  });
+  return Object.values(semanas).sort((a,b) => a.key.localeCompare(b.key));
+}
+
 function noitesFiltradas() {
   const todas = todasAsNoites();
-  if (filtroAtivo === 'mes')    return todas;
+  if (filtroAtivo === 'mes') return todas;
   if (filtroAtivo === 'semana') {
-    const idx = parseInt(document.getElementById('sel_semana')?.value ?? currentWeek);
-    return todas.filter(n => n._semanaIdx === idx);
+    const idx = parseInt(document.getElementById('sel_semana')?.value ?? 0);
+    const semanas = extrairSemanasDasNoites();
+    const sem = semanas[idx];
+    if (!sem) return todas;
+    return todas.filter(n => sem.datas.includes(n.data));
   }
   if (filtroAtivo === 'dia') {
     const diaSelec = document.getElementById('sel_dia')?.value || '';
@@ -1226,7 +1337,6 @@ function noitesFiltradas() {
   }
   if (filtroAtivo === 'atracao') {
     const atr = document.getElementById('sel_atracao')?.value || '';
-    // Filtra noites que têm a atração E marca o custo específico da banda
     return todas
       .filter(n => n.bandas.some(b => b.nome === atr))
       .map(n => ({
@@ -1269,13 +1379,17 @@ function renderChartShows() {
   }
 
   if (chartPeriodo === 'semana') {
-    DB.semanas.forEach((s, si) => {
+    // Agrupa noites do mês ativo por semana
+    const semanas = extrairSemanasDasNoites();
+    const todasN = todasAsNoites();
+    semanas.forEach(sem => {
+      const noitesSem = todasN.filter(n => sem.datas.includes(n.data));
       let custo = 0, couvert = 0;
-      (s.shows || []).forEach(n => {
+      noitesSem.forEach(n => {
         n.bandas.forEach(b => { custo += parseBR(b.cache) + getConsumoEfetivo(b); });
         couvert += parseBR(n.couvert);
       });
-      labels.push(s.label ? s.label.substring(0,8)+'…' : `Sem. ${si+1}`);
+      labels.push(sem.label.replace(` — ${getMesAtivo().nome}`, ''));
       custos.push(custo);
       couverts.push(couvert);
     });
@@ -1350,49 +1464,45 @@ function renderChartShows() {
 }
 
 function addNoite() {
-  const s = DB.semanas[currentWeek];
-  if (!s.shows) s.shows = [];
-  s.shows.push({ id: Date.now(), data: '', couvert: '', bandas: [{ nome: '', cache: '', consumo: '' }] });
-  // Muda filtro para semana atual para mostrar a noite adicionada
-  filtroAtivo = 'semana';
-  document.querySelectorAll('.filtro-btn').forEach(b => b.classList.remove('filtro-ativo'));
-  document.getElementById('filtro_semana').classList.add('filtro-ativo');
-  const sel = document.getElementById('sel_semana');
-  sel.style.display = '';
-  sel.innerHTML = DB.semanas.map((s,i) => `<option value="${i}">${s.label||'Semana '+(i+1)}</option>`).join('');
-  sel.value = currentWeek;
+  const m = getMesAtivo();
+  if (!m.noites) m.noites = [];
+  m.noites.push({ id: Date.now(), data: '', couvert: '', bandas: [{ nome: '', cache: '', consumo: '' }] });
+  filtroAtivo = 'mes';
+  document.querySelectorAll('.filtro-btn[id^="filtro_"]').forEach(b => b.classList.remove('filtro-ativo'));
+  const fm = document.getElementById('filtro_mes');
+  if (fm) fm.classList.add('filtro-ativo');
   renderShows();
   autoSave();
 }
 
-function addBanda(semanaIdx, noiteIdx) {
-  DB.semanas[semanaIdx].shows[noiteIdx].bandas.push({ nome: '', cache: '', consumo: '' });
+function addBanda(mesIdx, noiteIdx) {
+  DB.meses[mesIdx].noites[noiteIdx].bandas.push({ nome: '', cache: '', consumo: '' });
   renderShows();
 }
 
-function removerNoite(semanaIdx, noiteIdx) {
-  DB.semanas[semanaIdx].shows.splice(noiteIdx, 1);
+function removerNoite(mesIdx, noiteIdx) {
+  DB.meses[mesIdx].noites.splice(noiteIdx, 1);
   renderShows();
   calcShowsKPIs();
   autoSave();
 }
 
-function removerBanda(semanaIdx, noiteIdx, bandaIdx) {
-  const bandas = DB.semanas[semanaIdx].shows[noiteIdx].bandas;
+function removerBanda(mesIdx, noiteIdx, bandaIdx) {
+  const bandas = DB.meses[mesIdx].noites[noiteIdx].bandas;
   if (bandas.length <= 1) return;
   bandas.splice(bandaIdx, 1);
   renderShows();
   calcShowsKPIs();
 }
 
-function updateShow(semanaIdx, noiteIdx, field, value) {
-  DB.semanas[semanaIdx].shows[noiteIdx][field] = value;
+function updateShow(mesIdx, noiteIdx, field, value) {
+  DB.meses[mesIdx].noites[noiteIdx][field] = value;
   calcShowsKPIs();
 }
 
-function updateBanda(semanaIdx, noiteIdx, bandaIdx, field, value) {
-  DB.semanas[semanaIdx].shows[noiteIdx].bandas[bandaIdx][field] = value;
-  renderShowsSummary(semanaIdx, noiteIdx);
+function updateBanda(mesIdx, noiteIdx, bandaIdx, field, value) {
+  DB.meses[mesIdx].noites[noiteIdx].bandas[bandaIdx][field] = value;
+  renderShowsSummary(mesIdx, noiteIdx);
   calcShowsKPIs();
 }
 
@@ -1494,8 +1604,8 @@ function renderShows() {
   renderRanking();
 }
 
-function renderShowsSummary(si, ni) {
-  const noite = DB.semanas[si]?.shows?.[ni];
+function renderShowsSummary(mi, ni) {
+  const noite = DB.meses[mi]?.noites?.[ni];
   if (!noite) return;
   const el = document.getElementById(`summary_${si}_${ni}`);
   if (!el) return;
@@ -1542,19 +1652,22 @@ function calcShowsKPIs(noitesList) {
 
 function renderRanking() {
   const ranking = {};
-  todasAsNoites().forEach(noite => {
-    const couvert  = parseBR(noite.couvert);
-    const nBandas  = noite.bandas.length || 1;
-    const couvertPB = couvert / nBandas;
-    noite.bandas.forEach(b => {
-      if (!b.nome) return;
-      const nome = b.nome.trim();
-      if (!ranking[nome]) ranking[nome] = { nome, aparicoes:0, totalCouvert:0, totalCusto:0, totalLucro:0 };
-      const custo = parseBR(b.cache) + getConsumoEfetivo(b);
-      ranking[nome].aparicoes++;
-      ranking[nome].totalCouvert += couvertPB;
-      ranking[nome].totalCusto   += custo;
-      ranking[nome].totalLucro   += couvertPB - custo;
+  // Consolida todos os meses
+  (DB.meses || []).forEach(m => {
+    (m.noites || []).forEach(noite => {
+      const couvert  = parseBR(noite.couvert);
+      const nBandas  = noite.bandas.length || 1;
+      const couvertPB = couvert / nBandas;
+      noite.bandas.forEach(b => {
+        if (!b.nome) return;
+        const nome = b.nome.trim();
+        if (!ranking[nome]) ranking[nome] = { nome, aparicoes:0, totalCouvert:0, totalCusto:0, totalLucro:0 };
+        const custo = parseBR(b.cache) + getConsumoEfetivo(b);
+        ranking[nome].aparicoes++;
+        ranking[nome].totalCouvert += couvertPB;
+        ranking[nome].totalCusto   += custo;
+        ranking[nome].totalLucro   += couvertPB - custo;
+      });
     });
   });
   const sorted = Object.values(ranking).sort((a,b) => b.totalLucro - a.totalLucro);
@@ -1573,47 +1686,59 @@ function renderRanking() {
     </div>`).join('');
 }
 
-// Força carregamento da agenda do PDF na semana atual
+// Força carregamento da agenda do PDF no mês ativo
 function carregarAgendaPDF() {
-  const s = DB.semanas[currentWeek];
-  const label = (s.label || '').toLowerCase().replace(/[–—]/g, '-');
+  const m = getMesAtivo();
+  const nomeM = (m.nome || '').toLowerCase();
 
-  const eMarca = label.includes('março') || label.includes('marco');
-  const eAbril = label.includes('abril');
+  const eMarca = nomeM.includes('março') || nomeM.includes('marco');
+  const eAbril = nomeM.includes('abril');
 
-  const match = label.match(/(\d+)/);
-  const diaInicial = match ? parseInt(match[1]) : null;
-
-  let semPDF = null;
   let fonte = null;
+  let novasNoites = [];
 
-  if (eMarca && diaInicial !== null) {
-    if (diaInicial <= 1)  semPDF = 9;
-    else if (diaInicial <= 8)  semPDF = 10;
-    else if (diaInicial <= 15) semPDF = 11;
-    else if (diaInicial <= 22) semPDF = 12;
-    else if (diaInicial <= 29) semPDF = 13;
-    else semPDF = 14;
+  if (eMarca) {
     fonte = SHOWS_MARCO_2026;
-  } else if (eAbril && diaInicial !== null) {
-    if (diaInicial <= 5)  semPDF = 14;
-    else if (diaInicial <= 12) semPDF = 15;
-    else if (diaInicial <= 19) semPDF = 16;
-    else if (diaInicial <= 26) semPDF = 17;
-    else semPDF = 18;
+    novasNoites = Object.values(SHOWS_MARCO_2026).flat();
+  } else if (eAbril) {
     fonte = SHOWS_ABRIL_2026;
+    novasNoites = Object.values(SHOWS_ABRIL_2026).flat();
   }
 
-  if (semPDF && fonte && fonte[semPDF]) {
-    if (s.shows && s.shows.length > 0) {
-      if (!confirm('Esta semana já tem noites cadastradas. Substituir pela agenda?')) return;
+  if (novasNoites.length > 0) {
+    if (m.noites && m.noites.length > 0) {
+      if (!confirm(`"${m.nome}" já tem noites. Substituir pela agenda completa?`)) return;
     }
-    s.shows = JSON.parse(JSON.stringify(fonte[semPDF]));
+    m.noites = JSON.parse(JSON.stringify(novasNoites));
+    renderMesTabs();
     renderShows();
     autoSave();
     toast('Agenda carregada! ✅');
   } else {
-    toast('Esta semana não é de março ou abril, ou não tem agenda.');
+    toast(`Nenhuma agenda encontrada para "${m.nome}".`);
+  }
+}
+
+  if (semPDF && fonte && fonte[semPDF]) {
+    const m = getMesAtivo();
+    if (m.noites && m.noites.length > 0) {
+      if (!confirm(`"${m.nome}" já tem noites. Substituir pela agenda?`)) return;
+    }
+    // Merge: adiciona noites que ainda não existem (por data)
+    const novasNoites = JSON.parse(JSON.stringify(fonte[semPDF]));
+    const datasExistentes = new Set((m.noites || []).map(n => n.data));
+    const paraAdicionar = novasNoites.filter(n => !datasExistentes.has(n.data));
+    if (m.noites && m.noites.length > 0 && paraAdicionar.length < novasNoites.length) {
+      m.noites = novasNoites; // substitui tudo se confirmou
+    } else {
+      m.noites = [...(m.noites || []), ...paraAdicionar];
+    }
+    renderMesTabs();
+    renderShows();
+    autoSave();
+    toast('Agenda carregada! ✅');
+  } else {
+    toast('Mês não reconhecido na agenda. Verifique o nome do mês.');
   }
 }
 function importarExcelShows(ev) {
@@ -2121,20 +2246,20 @@ function iniciar(dadosNuvem) {
   if (dadosNuvem && dadosNuvem.semanas && dadosNuvem.semanas.length > 0) {
     DB = dadosNuvem;
   }
-  // Injeta shows nas semanas que ainda não têm
+  initMeses();
   injetarShowsNasSemanas();
   currentWeek = DB.semanas.length - 1;
   render();
   recalcTudo();
   setSyncStatus('online');
-
-  // Escuta mudanças em tempo real de outros dispositivos
   if (window._fbListen) {
     window._fbListen((dados) => {
       DB = dados;
+      initMeses();
       injetarShowsNasSemanas();
       render();
       recalcTudo();
+      if (paginaAtiva === 'shows') { renderMesTabs(); renderShows(); renderRanking(); renderChartShows(); }
     });
   }
 }
