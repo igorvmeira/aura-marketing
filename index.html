@@ -1731,28 +1731,6 @@ function carregarAgendaPDF() {
   }
 }
 
-  if (semPDF && fonte && fonte[semPDF]) {
-    const m = getMesAtivo();
-    if (m.noites && m.noites.length > 0) {
-      if (!confirm(`"${m.nome}" já tem noites. Substituir pela agenda?`)) return;
-    }
-    // Merge: adiciona noites que ainda não existem (por data)
-    const novasNoites = JSON.parse(JSON.stringify(fonte[semPDF]));
-    const datasExistentes = new Set((m.noites || []).map(n => n.data));
-    const paraAdicionar = novasNoites.filter(n => !datasExistentes.has(n.data));
-    if (m.noites && m.noites.length > 0 && paraAdicionar.length < novasNoites.length) {
-      m.noites = novasNoites; // substitui tudo se confirmou
-    } else {
-      m.noites = [...(m.noites || []), ...paraAdicionar];
-    }
-    renderMesTabs();
-    renderShows();
-    autoSave();
-    toast('Agenda carregada! ✅');
-  } else {
-    toast('Mês não reconhecido na agenda. Verifique o nome do mês.');
-  }
-}
 function importarExcelShows(ev) {
   const file = ev.target.files[0]; if (!file) return;
   const reader = new FileReader();
