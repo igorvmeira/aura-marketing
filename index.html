@@ -1186,31 +1186,43 @@ function showsDataSemana() {
 let mesAtivo = 0; // índice do mês atual
 
 function initMeses() {
-  if (!DB.meses) {
-    // Migra dados antigos de shows das semanas para o mês de Março
-    const noitesMigradas = [];
-    DB.semanas.forEach(s => {
-      if (s.shows && s.shows.length > 0) {
-        s.shows.forEach(n => noitesMigradas.push(n));
-        s.shows = []; // limpa das semanas
+  try {
+    if (!DB.meses || !Array.isArray(DB.meses) || DB.meses.length === 0) {
+      // Migra dados antigos de shows das semanas para o mês de Março
+      const noitesMigradas = [];
+      if (DB.semanas && Array.isArray(DB.semanas)) {
+        DB.semanas.forEach(s => {
+          if (s && s.shows && Array.isArray(s.shows) && s.shows.length > 0) {
+            s.shows.forEach(n => noitesMigradas.push(n));
+            s.shows = [];
+          }
+        });
       }
-    });
-    DB.meses = [
-      { id: 'marco2026',  nome: 'Março 2026',  noites: noitesMigradas },
-      { id: 'abril2026',  nome: 'Abril 2026',   noites: [] },
-    ];
-    mesAtivo = 0;
+      DB.meses = [
+        { id: 'marco2026', nome: 'Março 2026', noites: noitesMigradas },
+        { id: 'abril2026', nome: 'Abril 2026', noites: [] },
+      ];
+    }
+
+    // Garante que abril tem agenda se vazio
+    const abril = DB.meses.find(m => m && m.id === 'abril2026');
+    if (abril && (!abril.noites || abril.noites.length === 0)) {
+      try {
+        const todasAbril = Object.values(SHOWS_ABRIL_2026).flat();
+        abril.noites = JSON.parse(JSON.stringify(todasAbril));
+      } catch(e) { console.warn('Erro ao carregar agenda abril:', e); }
+    }
+
+    if (mesAtivo >= DB.meses.length) mesAtivo = 0;
+  } catch(err) {
+    console.error('Erro no initMeses:', err);
+    if (!DB.meses) DB.meses = [{ id: 'marco2026', nome: 'Março 2026', noites: [] }];
   }
-  // Garante que abril tem a agenda pré-carregada se ainda estiver vazio
-  const abril = DB.meses.find(m => m.id === 'abril2026');
-  if (abril && abril.noites.length === 0) {
-    const todasAbril = Object.values(SHOWS_ABRIL_2026).flat();
-    abril.noites = JSON.parse(JSON.stringify(todasAbril));
-  }
-  if (mesAtivo >= DB.meses.length) mesAtivo = DB.meses.length - 1;
 }
 
 function getMesAtivo() {
+  if (!DB.meses || !Array.isArray(DB.meses) || DB.meses.length === 0) return { id:'tmp', nome:'', noites:[] };
+  if (mesAtivo < 0 || mesAtivo >= DB.meses.length) mesAtivo = 0;
   return DB.meses[mesAtivo];
 }
 
@@ -2316,7 +2328,6 @@ if (window._fbReady) {
     if (!DB.semanas || DB.semanas.length === 0) iniciar(null);
   }, 6000);
 }
-</script>
 </script>
 </body>
 </html>
