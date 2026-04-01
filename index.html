@@ -640,7 +640,7 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;font
       <button class="mcls" onclick="closeModal()">✕</button>
     </div>
     <div class="modal-body">
-      <div class="chart-wrap modal-chart-wrap"><canvas id="chartModal"></canvas></div>
+      <div class="chart-wrap modal-chart-wrap" style="height:240px"><canvas id="chartModal"></canvas></div>
       <div id="modalTable"></div>
     </div>
   </div>
@@ -1000,29 +1000,116 @@ function openModal(ci) {
   document.getElementById('modalTtl').textContent = c0.emoji + ' ' + c0.nome + ' — Histórico';
 
   const labels = DB.semanas.map((s,i) => s.label ? s.label.substring(0,8) : 'S'+(i+1));
-  const inv = DB.semanas.map(s => pv(s.campanhas[ci]?.investimento));
-  const ret = DB.semanas.map(s => pv(s.campanhas[ci]?.retorno));
+  const isFestival = c0.tipo === 'festival';
 
-  if (mChart) mChart.destroy();
-  mChart = new Chart(document.getElementById('chartModal'), {
-    type:'bar',
-    data:{ labels, datasets:[
-      {label:'Investimento',data:inv,backgroundColor:'rgba(192,57,43,0.45)',borderColor:'#c0392b',borderWidth:1.5,borderRadius:4},
-      {label:'Retorno',data:ret,backgroundColor:'rgba(92,107,74,0.45)',borderColor:'#5c6b4a',borderWidth:1.5,borderRadius:4},
-    ]},
-    options: cOpts()
+  const inv    = DB.semanas.map(s => pv(s.campanhas[ci]?.investimento));
+  const ret    = DB.semanas.map(s => pv(s.campanhas[ci]?.retorno));
+  const fatDia = DB.semanas.map(s => pv(s.campanhas[ci]?.faturamento_dia));
+  const pct    = DB.semanas.map(s => {
+    const r = pv(s.campanhas[ci]?.retorno);
+    const f = pv(s.campanhas[ci]?.faturamento_dia);
+    return (f > 0 && r > 0) ? parseFloat(((r / f) * 100).toFixed(1)) : 0;
   });
 
+  if (mChart) mChart.destroy();
+
+  const datasets = isFestival ? [
+    {
+      type: 'bar',
+      label: 'Retorno da campanha',
+      data: ret,
+      backgroundColor: 'rgba(92,107,74,0.5)',
+      borderColor: '#5c6b4a',
+      borderWidth: 1.5,
+      borderRadius: 4,
+      yAxisID: 'y',
+    },
+    {
+      type: 'bar',
+      label: 'Faturamento Total do Dia',
+      data: fatDia,
+      backgroundColor: 'rgba(92,156,224,0.4)',
+      borderColor: '#4285f4',
+      borderWidth: 1.5,
+      borderRadius: 4,
+      yAxisID: 'y',
+    },
+    {
+      type: 'line',
+      label: '% do fat. vindo do festival',
+      data: pct,
+      borderColor: '#f4b942',
+      backgroundColor: 'rgba(244,185,66,0.15)',
+      borderWidth: 2,
+      pointBackgroundColor: '#f4b942',
+      pointRadius: 5,
+      tension: 0.3,
+      fill: false,
+      yAxisID: 'y2',
+    },
+  ] : [
+    {label:'Investimento', data:inv, backgroundColor:'rgba(192,57,43,0.45)', borderColor:'#c0392b', borderWidth:1.5, borderRadius:4},
+    {label:'Retorno',      data:ret, backgroundColor:'rgba(92,107,74,0.45)', borderColor:'#5c6b4a', borderWidth:1.5, borderRadius:4},
+  ];
+
+  mChart = new Chart(document.getElementById('chartModal'), {
+    type: 'bar',
+    plugins: [ChartDataLabels],
+    data: { labels, datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { labels: { font:{family:'Outfit',size:11}, color:'#8a8a7e' } },
+        datalabels: {
+          anchor: 'end', align: 'end', offset: 2,
+          font: { family:'Outfit', size:8, weight:'500' },
+          color: '#5c5c5c',
+          formatter: (v, ctx) => {
+            if (!v || v === 0) return '';
+            // Linha de % mostra com símbolo
+            if (ctx.dataset.yAxisID === 'y2') return v + '%';
+            return 'R$\n' + formatBR(v);
+          },
+          clip: false,
+        }
+      },
+      layout: { padding: { top: 28 } },
+      scales: isFestival ? {
+        x:  { ticks:{font:{family:'Outfit',size:9},color:'#8a8a7e'}, grid:{color:'rgba(0,0,0,0.04)'} },
+        y:  { ticks:{font:{family:'Outfit',size:9},color:'#8a8a7e', callback: v => 'R$ '+formatBR(v)}, grid:{color:'rgba(0,0,0,0.04)'}, position:'left' },
+        y2: {
+          ticks: { font:{family:'Outfit',size:9}, color:'#f4b942', callback: v => v+'%' },
+          grid: { display: false },
+          position: 'right',
+          min: 0, max: 100,
+        }
+      } : {
+        x: { ticks:{font:{family:'Outfit',size:10},color:'#8a8a7e'}, grid:{color:'rgba(0,0,0,0.04)'} },
+        y: { ticks:{font:{family:'Outfit',size:10},color:'#8a8a7e'}, grid:{color:'rgba(0,0,0,0.04)'} }
+      }
+    }
+  });
+
+  // Tabela
+  const isFest = c0.tipo === 'festival';
   let html = `<table class="mt"><thead><tr>
-    <th>Semana</th><th>Investimento</th><th>Retorno</th><th>Adesões</th><th>ROI</th>
+    <th>Semana</th><th>Retorno</th>
+    ${isFest ? '<th>Fat. Total Dia</th><th>% Festival</th>' : '<th>Investimento</th>'}
+    <th>Adesões</th><th>ROI</th>
   </tr></thead><tbody>`;
   DB.semanas.forEach((s,i) => {
-    const c = s.campanhas[ci];
-    const rv = parseFloat((c?.roi_perc||'0').replace(',','.'));
+    const c   = s.campanhas[ci];
+    const rv  = parseFloat((c?.roi_perc||'0').replace(',','.'));
+    const r   = pv(c?.retorno);
+    const f   = pv(c?.faturamento_dia);
+    const p   = (f > 0 && r > 0) ? ((r/f)*100).toFixed(1)+'%' : '—';
     html += `<tr>
       <td style="font-size:0.7rem;color:var(--muted)">${s.label||'Semana '+(i+1)}</td>
-      <td>${c?.investimento ? 'R$ '+c.investimento : '—'}</td>
       <td>${c?.retorno ? 'R$ '+c.retorno : '—'}</td>
+      ${isFest
+        ? `<td>${c?.faturamento_dia ? 'R$ '+c.faturamento_dia : '—'}</td>
+           <td style="color:${parseFloat(p)>=50?'var(--pos)':parseFloat(p)>=25?'#f4b942':'var(--red)'};font-weight:500">${p}</td>`
+        : `<td>${c?.investimento ? 'R$ '+c.investimento : '—'}</td>`}
       <td>${c?.adesoes||'—'}</td>
       <td><span class="badge ${rv>=0?'pos':'neg'}" style="font-size:0.68rem">${c?.roi_perc||'—'}%</span></td>
     </tr>`;
