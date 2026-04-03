@@ -251,7 +251,31 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;font
 .mes-tab-del{width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.7rem;opacity:0.6;transition:opacity .2s;}
 .mes-tab-del:hover{opacity:1;}
 
-/* DELIVERY */
+/* AGENDA CALENDÁRIO */
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:20px;}
+.cal-header{text-align:center;font-size:0.6rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);padding:6px 0;}
+.cal-day{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:8px;min-height:80px;position:relative;transition:box-shadow .2s;}
+.cal-day:hover{box-shadow:0 2px 12px rgba(0,0,0,0.08);}
+.cal-day.vazio{background:transparent;border-color:transparent;}
+.cal-day.hoje{border-color:var(--green);border-width:2px;}
+.cal-day.tem-show{background:var(--green-s);}
+.cal-num{font-size:0.72rem;font-weight:500;color:var(--muted);margin-bottom:5px;}
+.cal-day.tem-show .cal-num{color:var(--green);font-weight:600;}
+.cal-show-pill{background:var(--green);color:#fff;border-radius:5px;padding:2px 6px;font-size:0.58rem;font-weight:500;margin-bottom:2px;cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;transition:background .2s;}
+.cal-show-pill:hover{background:var(--green-l);}
+.cal-show-pill.plat-brendi{background:#f4b942;color:#1a1c18;}
+.cal-show-pill.sem-cache{background:var(--surface2);color:var(--muted);border:1px solid var(--border);}
+.cal-tooltip{position:fixed;background:var(--text);color:#fff;border-radius:10px;padding:12px 14px;font-size:0.75rem;z-index:200;max-width:220px;box-shadow:0 8px 24px rgba(0,0,0,0.2);pointer-events:none;display:none;}
+.cal-tooltip.show{display:block;}
+.cal-mes-nav{display:flex;align-items:center;gap:12px;margin-bottom:16px;}
+.cal-mes-titulo{font-size:1rem;font-weight:500;}
+@media(max-width:768px){
+  .cal-grid{gap:2px;}
+  .cal-day{min-height:54px;padding:5px;}
+  .cal-show-pill{font-size:0.5rem;padding:1px 4px;}
+  .cal-num{font-size:0.65rem;}
+}
+
 .dv-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);margin-bottom:12px;}
 .dv-semana-label{font-size:0.88rem;font-weight:500;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;}
 .dv-plat-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
@@ -330,6 +354,10 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;font
     <div class="nav-item" onclick="showPage('delivery',this)">
       <svg class="nav-ico" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
       <span class="nav-label">Delivery</span>
+    </div>
+    <div class="nav-item" onclick="showPage('agenda',this)">
+      <svg class="nav-ico" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      <span class="nav-label">Agenda de Shows</span>
     </div>
   </nav>
   <div class="sidebar-footer">
@@ -693,6 +721,49 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;font
       <div id="deliveryList"></div>
 
     </div><!-- /delivery -->
+
+    <!-- ═══ AGENDA DE SHOWS ═══ -->
+    <div class="page" id="page-agenda">
+
+      <!-- Navegação de mês -->
+      <div class="cal-mes-nav">
+        <button class="wbtn" onclick="agendaMesAnterior()">&#8592;</button>
+        <div class="cal-mes-titulo" id="agendaMesTitulo">—</div>
+        <button class="wbtn" onclick="agendaMesProximo()">&#8594;</button>
+        <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+          <div style="display:flex;align-items:center;gap:5px;font-size:0.72rem;color:var(--muted)">
+            <span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:var(--green)"></span>Show com cachê
+          </div>
+          <div style="display:flex;align-items:center;gap:5px;font-size:0.72rem;color:var(--muted)">
+            <span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:var(--surface2);border:1px solid var(--border)"></span>Sem cachê
+          </div>
+        </div>
+      </div>
+
+      <!-- Grade do calendário -->
+      <div class="cal-grid" id="calHeader">
+        <div class="cal-header">Seg</div>
+        <div class="cal-header">Ter</div>
+        <div class="cal-header">Qua</div>
+        <div class="cal-header">Qui</div>
+        <div class="cal-header">Sex</div>
+        <div class="cal-header">Sáb</div>
+        <div class="cal-header">Dom</div>
+      </div>
+      <div class="cal-grid" id="calBody"></div>
+
+      <!-- Resumo do mês -->
+      <div class="sec" style="margin-top:8px">Resumo do Mês</div>
+      <div class="shows-kpi-grid" id="agendaKPIs"></div>
+
+      <!-- Lista do mês -->
+      <div class="sec" style="margin-top:4px">Todas as Atrações</div>
+      <div id="agendaLista"></div>
+
+    </div><!-- /agenda -->
+
+    <!-- Tooltip do calendário -->
+    <div class="cal-tooltip" id="calTooltip"></div>
 
   </div><!-- /content -->
 </div><!-- /main -->
@@ -1079,6 +1150,7 @@ function showPage(id, el) {
   if (id === 'shows')    { renderMesTabs(); renderShows(); renderRanking(); renderChartShows(); }
   if (id === 'domingos') { renderDomingos(); }
   if (id === 'delivery') { renderDelivery(); }
+  if (id === 'agenda')   { agendaMesIdx = mesAtivo; renderAgenda(); }
 }
 
 // ════════════════════════════════
@@ -2457,6 +2529,187 @@ function renderChartDelivery() {
       }
     }
   });
+}
+
+// ════════════════════════════════
+// AGENDA DE SHOWS — CALENDÁRIO
+// ════════════════════════════════
+
+// Meses disponíveis (baseados em DB.meses)
+let agendaMesIdx = 0; // índice no DB.meses
+
+const MESES_NOME = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+const MESES_ANO = { 'marco2026':{ m:2, a:2026 }, 'abril2026':{ m:3, a:2026 } };
+
+function getMesAno(mesId) {
+  // Tenta extrair mês/ano do nome do mês (ex: "Março 2026")
+  if (MESES_ANO[mesId]) return MESES_ANO[mesId];
+  const m = DB.meses?.[agendaMesIdx];
+  if (!m) return { m: new Date().getMonth(), a: new Date().getFullYear() };
+  const nome = (m.nome || '').toLowerCase();
+  const ano = parseInt(nome.match(/\d{4}/)?.[0]) || new Date().getFullYear();
+  const mIdx = MESES_NOME.findIndex(n => nome.includes(n.toLowerCase()));
+  return { m: mIdx >= 0 ? mIdx : new Date().getMonth(), a: ano };
+}
+
+function agendaMesAnterior() {
+  if (agendaMesIdx > 0) agendaMesIdx--;
+  renderAgenda();
+}
+function agendaMesProximo() {
+  if (DB.meses && agendaMesIdx < DB.meses.length - 1) agendaMesIdx++;
+  renderAgenda();
+}
+
+// Extrai o dia numérico de uma string de data (ex: "Sexta-feira, 20/03" → 20)
+function extrairDia(dataStr) {
+  const m = (dataStr || '').match(/(\d{1,2})\/(\d{2})/);
+  return m ? parseInt(m[1]) : null;
+}
+
+// Dia da semana JS (0=Dom) → índice de coluna (0=Seg)
+function diaSemanaParaColuna(jsDay) {
+  return jsDay === 0 ? 6 : jsDay - 1;
+}
+
+function renderAgenda() {
+  if (!DB.meses || DB.meses.length === 0) return;
+  if (agendaMesIdx >= DB.meses.length) agendaMesIdx = 0;
+
+  const mes = DB.meses[agendaMesIdx];
+  const { m: mesNum, a: ano } = getMesAno(mes.id);
+
+  // Atualiza título
+  const titulo = document.getElementById('agendaMesTitulo');
+  if (titulo) titulo.textContent = mes.nome;
+
+  // Mapeia dia → noites
+  const noitesPorDia = {};
+  (mes.noites || []).forEach(noite => {
+    const dia = extrairDia(noite.data);
+    if (!dia) return;
+    if (!noitesPorDia[dia]) noitesPorDia[dia] = [];
+    noitesPorDia[dia].push(noite);
+  });
+
+  // Primeiro dia do mês e quantos dias tem
+  const primeiroDia   = new Date(ano, mesNum, 1).getDay();
+  const totalDias     = new Date(ano, mesNum + 1, 0).getDate();
+  const colInicio     = diaSemanaParaColuna(primeiroDia);
+  const hoje          = new Date();
+  const ehHoje        = (d) => hoje.getFullYear()===ano && hoje.getMonth()===mesNum && hoje.getDate()===d;
+
+  // Gera células
+  const calBody = document.getElementById('calBody');
+  if (!calBody) return;
+
+  let html = '';
+  // Células vazias antes do dia 1
+  for (let i = 0; i < colInicio; i++) html += `<div class="cal-day vazio"></div>`;
+
+  for (let d = 1; d <= totalDias; d++) {
+    const noites  = noitesPorDia[d] || [];
+    const temShow = noites.length > 0;
+    const classes = ['cal-day', temShow ? 'tem-show' : '', ehHoje(d) ? 'hoje' : ''].filter(Boolean).join(' ');
+
+    const pills = noites.flatMap(noite =>
+      (noite.bandas || []).map(b => {
+        const temCache = parseBR(b.cache) > 0;
+        const cls = temCache ? '' : 'sem-cache';
+        const nomes = b.nome || '?';
+        const cache = temCache ? ` · R$${b.cache}` : '';
+        return `<div class="cal-show-pill ${cls}"
+          onmouseenter="showCalTooltip(event,'${noite.data}',${JSON.stringify((noite.bandas||[]).map(x=>x.nome+'|'+x.cache)).replace(/"/g,'&quot;')})"
+          onmouseleave="hideCalTooltip()"
+          >${nomes}</div>`;
+      })
+    ).join('');
+
+    html += `<div class="${classes}">
+      <div class="cal-num">${d}</div>
+      ${pills}
+    </div>`;
+  }
+
+  // Células vazias depois do último dia
+  const totalCelulas = colInicio + totalDias;
+  const resto = totalCelulas % 7;
+  if (resto > 0) for (let i = 0; i < 7 - resto; i++) html += `<div class="cal-day vazio"></div>`;
+
+  calBody.innerHTML = html;
+
+  // KPIs do mês
+  renderAgendaKPIs(mes, noitesPorDia);
+  renderAgendaLista(mes, noitesPorDia, totalDias);
+}
+
+function showCalTooltip(ev, data, bandasJson) {
+  const tooltip = document.getElementById('calTooltip');
+  if (!tooltip) return;
+  try {
+    const bandas = JSON.parse(bandasJson.replace(/&quot;/g, '"'));
+    const linhas = bandas.map(b => {
+      const [nome, cache] = b.split('|');
+      return `<div style="margin-bottom:4px">🎵 <b>${nome}</b>${parseFloat((cache||'0').replace(/\./g,'').replace(',','.'))>0?' · R$ '+cache:' · sem cachê'}</div>`;
+    }).join('');
+    tooltip.innerHTML = `<div style="font-size:0.65rem;opacity:0.7;margin-bottom:6px">${data}</div>${linhas}`;
+    tooltip.classList.add('show');
+    tooltip.style.left = (ev.clientX + 12) + 'px';
+    tooltip.style.top  = (ev.clientY - 10) + 'px';
+  } catch(e) {}
+}
+function hideCalTooltip() {
+  const t = document.getElementById('calTooltip');
+  if (t) t.classList.remove('show');
+}
+
+function renderAgendaKPIs(mes, noitesPorDia) {
+  const container = document.getElementById('agendaKPIs');
+  if (!container) return;
+  let totalNoites = 0, totalBandas = 0, totalCache = 0, totalDiasComShow = 0;
+  Object.entries(noitesPorDia).forEach(([d, noites]) => {
+    if (noites.length > 0) totalDiasComShow++;
+    noites.forEach(n => {
+      totalNoites++;
+      (n.bandas||[]).forEach(b => {
+        totalBandas++;
+        totalCache += parseBR(b.cache);
+      });
+    });
+  });
+  container.innerHTML = `
+    <div class="kpi-card"><div class="kpi-lbl">Dias com Show</div><div class="kpi-val" style="font-size:1.4rem">${totalDiasComShow}</div></div>
+    <div class="kpi-card"><div class="kpi-lbl">Total de Atrações</div><div class="kpi-val" style="font-size:1.4rem">${totalBandas}</div></div>
+    <div class="kpi-card"><div class="kpi-lbl">Custo Cachê Total</div><div class="kpi-val" style="font-size:1.4rem">R$&nbsp;${totalCache > 0 ? formatBR(totalCache) : '—'}</div></div>
+    <div class="kpi-card"><div class="kpi-lbl">Média Cachê/Atração</div><div class="kpi-val" style="font-size:1.4rem">R$&nbsp;${totalBandas > 0 && totalCache > 0 ? formatBR(totalCache/totalBandas) : '—'}</div></div>`;
+}
+
+function renderAgendaLista(mes, noitesPorDia, totalDias) {
+  const container = document.getElementById('agendaLista');
+  if (!container) return;
+  const diasOrdenados = Object.keys(noitesPorDia).map(Number).sort((a,b)=>a-b);
+  if (diasOrdenados.length === 0) {
+    container.innerHTML = `<div style="text-align:center;padding:30px;color:var(--muted);font-size:0.82rem">Nenhuma atração cadastrada para este mês.</div>`;
+    return;
+  }
+  container.innerHTML = diasOrdenados.map(d => {
+    const noites = noitesPorDia[d];
+    const todasBandas = noites.flatMap(n => (n.bandas||[]).map(b=>({...b, data:n.data})));
+    const dataStr = noites[0]?.data || '';
+    return `<div style="display:flex;align-items:flex-start;gap:14px;padding:12px 0;border-bottom:1px solid var(--border)">
+      <div style="min-width:44px;text-align:center">
+        <div style="font-size:1.4rem;font-weight:300;color:var(--green);line-height:1">${d}</div>
+        <div style="font-size:0.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em">${getDiaSemana(dataStr)||''}</div>
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;gap:4px">
+        ${todasBandas.map(b => `
+          <div style="display:flex;align-items:center;justify-content:space-between;background:${parseBR(b.cache)>0?'var(--green-s)':'var(--surface2)'};border-radius:8px;padding:8px 12px">
+            <span style="font-size:0.82rem;font-weight:500">🎵 ${b.nome||'—'}</span>
+            <span style="font-size:0.78rem;color:${parseBR(b.cache)>0?'var(--green)':'var(--muted)'}">${parseBR(b.cache)>0?'R$ '+b.cache:'Sem cachê'}</span>
+          </div>`).join('')}
+      </div>
+    </div>`;
+  }).join('');
 }
 
 // ════════════════════════════════
