@@ -251,7 +251,10 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;font
 .mes-tab-del{width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.7rem;opacity:0.6;transition:opacity .2s;}
 .mes-tab-del:hover{opacity:1;}
 
-/* AGENDA CALENDÁRIO */
+.mais-item{display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:12px;cursor:pointer;color:var(--text);font-size:0.88rem;transition:background .15s;}
+.mais-item:hover,.mais-item:active{background:var(--surface2);}
+.mais-item svg{width:20px;height:20px;color:var(--green);flex-shrink:0;}
+
 .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:20px;}
 .cal-header{text-align:center;font-size:0.6rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);padding:6px 0;}
 .cal-day{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:8px;min-height:80px;position:relative;transition:box-shadow .2s;}
@@ -379,28 +382,48 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;font
       <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
       <span>Dashboard</span>
     </div>
-    <div class="mobile-nav-item" id="mnav_graficos" onclick="showPage('graficos',this);setMobileNav('graficos')">
-      <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-      <span>Gráficos</span>
-    </div>
-    <div class="mobile-nav-item" id="mnav_metricas" onclick="showPage('metricas',this);setMobileNav('metricas')">
-      <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
-      <span>Métricas</span>
-    </div>
     <div class="mobile-nav-item" id="mnav_shows" onclick="showPage('shows',this);setMobileNav('shows')">
       <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
       <span>Shows</span>
-    </div>
-    <div class="mobile-nav-item" id="mnav_domingos" onclick="showPage('domingos',this);setMobileNav('domingos')">
-      <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-      <span>Domingos</span>
     </div>
     <div class="mobile-nav-item" id="mnav_delivery" onclick="showPage('delivery',this);setMobileNav('delivery')">
       <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
       <span>Delivery</span>
     </div>
+    <div class="mobile-nav-item" id="mnav_agenda" onclick="showPage('agenda',this);setMobileNav('agenda')">
+      <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      <span>Agenda</span>
+    </div>
+    <div class="mobile-nav-item" id="mnav_mais" onclick="toggleMaisMenu()">
+      <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="5" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/><circle cx="12" cy="19" r="1.5" fill="currentColor"/></svg>
+      <span>Mais</span>
+    </div>
   </div>
 </nav>
+
+<!-- MENU "MAIS" — DRAWER MOBILE -->
+<div id="maisOverlay" onclick="fecharMaisMenu()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:60;backdrop-filter:blur(2px)"></div>
+<div id="maisDrawer" style="display:none;position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-radius:20px 20px 0 0;z-index:61;padding:12px 0 max(20px,env(safe-area-inset-bottom));transform:translateY(100%);transition:transform .3s cubic-bezier(.4,0,.2,1)">
+  <div style="width:40px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 16px"></div>
+  <div style="padding:0 8px">
+    <div class="mais-item" onclick="showPage('graficos',null);setMobileNav('graficos');fecharMaisMenu()">
+      <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      <span>Gráficos</span>
+    </div>
+    <div class="mais-item" onclick="showPage('metricas',null);setMobileNav('metricas');fecharMaisMenu()">
+      <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+      <span>Métricas</span>
+    </div>
+    <div class="mais-item" onclick="showPage('domingos',null);setMobileNav('domingos');fecharMaisMenu()">
+      <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      <span>Domingos</span>
+    </div>
+    <div class="mais-item" style="border-top:1px solid var(--border);margin-top:8px;padding-top:8px" onclick="salvarNuvem();fecharMaisMenu()">
+      <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v14a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+      <span>Salvar na nuvem</span>
+    </div>
+  </div>
+</div>
 
 <!-- BOTÃO SALVAR MOBILE -->
 <button class="mobile-save show-mobile" onclick="salvarNuvem()">
@@ -2973,6 +2996,31 @@ function injetarShowsNasSemanas() {
 // ════════════════════════════════
 // SIDEBAR COLLAPSE + MOBILE NAV
 // ════════════════════════════════
+function toggleMaisMenu() {
+  const drawer  = document.getElementById('maisDrawer');
+  const overlay = document.getElementById('maisOverlay');
+  const aberto  = drawer.style.display === 'block';
+  if (aberto) {
+    fecharMaisMenu();
+  } else {
+    drawer.style.display  = 'block';
+    overlay.style.display = 'block';
+    requestAnimationFrame(() => { drawer.style.transform = 'translateY(0)'; });
+    document.getElementById('mnav_mais')?.classList.add('active');
+  }
+}
+
+function fecharMaisMenu() {
+  const drawer  = document.getElementById('maisDrawer');
+  const overlay = document.getElementById('maisOverlay');
+  drawer.style.transform = 'translateY(100%)';
+  setTimeout(() => {
+    drawer.style.display  = 'none';
+    overlay.style.display = 'none';
+  }, 300);
+  document.getElementById('mnav_mais')?.classList.remove('active');
+}
+
 function toggleSidebar() {
   const sb = document.getElementById('sidebar');
   const icon = document.getElementById('collapseIcon');
@@ -2985,9 +3033,14 @@ function toggleSidebar() {
 }
 
 function setMobileNav(id) {
+  const maisPages = ['graficos','metricas','domingos'];
   document.querySelectorAll('.mobile-nav-item').forEach(el => el.classList.remove('active'));
-  const el = document.getElementById('mnav_' + id);
-  if (el) el.classList.add('active');
+  if (maisPages.includes(id)) {
+    document.getElementById('mnav_mais')?.classList.add('active');
+  } else {
+    const el = document.getElementById('mnav_' + id);
+    if (el) el.classList.add('active');
+  }
 }
 
 // Desativa datalabels globalmente — só o gráfico de shows usa explicitamente
