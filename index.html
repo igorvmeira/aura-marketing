@@ -251,6 +251,21 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;font
 .mes-tab-del{width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.7rem;opacity:0.6;transition:opacity .2s;}
 .mes-tab-del:hover{opacity:1;}
 
+/* DELIVERY */
+.dv-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);margin-bottom:12px;}
+.dv-semana-label{font-size:0.88rem;font-weight:500;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;}
+.dv-plat-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+.dv-plat{background:var(--surface2);border-radius:10px;padding:14px;}
+.dv-plat-name{font-size:0.72rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:6px;}
+.dv-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.dv-lbl{font-size:0.72rem;color:var(--muted);}
+.dv-inp{width:90px;text-align:right;padding:5px 8px;border:1px solid var(--border);border-radius:6px;font-family:'Outfit',sans-serif;font-size:0.8rem;background:var(--surface);color:var(--text);outline:none;transition:border-color .2s;}
+.dv-inp:focus{border-color:var(--green);}
+.dv-total-row{display:flex;gap:20px;padding-top:12px;border-top:1px solid var(--border);flex-wrap:wrap;}
+.dv-tot{display:flex;flex-direction:column;gap:2px;}
+.dv-tot-lbl{font-size:0.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);}
+.dv-tot-val{font-size:0.9rem;font-weight:500;}
+
 .domingo-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);margin-bottom:14px;}
 .domingo-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
 .domingo-titulo{font-size:0.9rem;font-weight:500;display:flex;align-items:center;gap:8px;}
@@ -312,6 +327,10 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;font
       <svg class="nav-ico" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
       <span class="nav-label">Domingos</span>
     </div>
+    <div class="nav-item" onclick="showPage('delivery',this)">
+      <svg class="nav-ico" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+      <span class="nav-label">Delivery</span>
+    </div>
   </nav>
   <div class="sidebar-footer">
     <div id="syncStatus" style="display:flex;align-items:center;gap:6px;font-size:0.7rem;color:rgba(255,255,255,0.5);padding:4px 0">
@@ -347,6 +366,10 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;font
     <div class="mobile-nav-item" id="mnav_domingos" onclick="showPage('domingos',this);setMobileNav('domingos')">
       <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
       <span>Domingos</span>
+    </div>
+    <div class="mobile-nav-item" id="mnav_delivery" onclick="showPage('delivery',this);setMobileNav('delivery')">
+      <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+      <span>Delivery</span>
     </div>
   </div>
 </nav>
@@ -605,6 +628,71 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;font
       <div id="domingosList"></div>
 
     </div><!-- /domingos -->
+
+    <!-- ═══ DELIVERY ═══ -->
+    <div class="page" id="page-delivery">
+
+      <div class="sec">Resumo do Mês — Delivery</div>
+
+      <!-- Seletor de período -->
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:16px;flex-wrap:wrap;justify-content:space-between">
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <div style="display:flex;background:var(--surface2);border:1px solid var(--border);border-radius:8px;overflow:hidden">
+            <button id="dv_filtro_mes"    class="filtro-btn filtro-ativo" onclick="setDeliveryFiltro('mes')">Mês</button>
+            <button id="dv_filtro_semana" class="filtro-btn"              onclick="setDeliveryFiltro('semana')">Semana</button>
+            <button id="dv_filtro_tudo"   class="filtro-btn"              onclick="setDeliveryFiltro('tudo')">Histórico</button>
+          </div>
+          <select id="dv_sel_mes" class="inp-show" style="width:auto;padding:7px 12px" onchange="renderDelivery()">
+            <option value="ago">Agosto 2025</option>
+            <option value="set">Setembro 2025</option>
+            <option value="out">Outubro 2025</option>
+            <option value="nov">Novembro 2025</option>
+            <option value="dez">Dezembro 2025</option>
+            <option value="jan">Janeiro 2026</option>
+            <option value="fev">Fevereiro 2026</option>
+            <option value="mar" selected>Março 2026</option>
+          </select>
+        </div>
+        <button class="btn btn-primary" onclick="addSemanaDelivery()">
+          <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Nova semana
+        </button>
+      </div>
+
+      <!-- KPIs totais -->
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:18px" id="dv_kpis">
+        <div class="kpi-card">
+          <div class="kpi-lbl">Total Pedidos</div>
+          <div class="kpi-val" style="font-size:1.4rem"><span id="dv_k_pedidos">—</span></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-lbl">Faturamento Total</div>
+          <div class="kpi-val" style="font-size:1.4rem">R$&nbsp;<span id="dv_k_total">—</span></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-lbl">Novos Clientes</div>
+          <div class="kpi-val" style="font-size:1.4rem"><span id="dv_k_novos">—</span></div>
+        </div>
+      </div>
+
+      <!-- Gráfico comparativo -->
+      <div class="sec">Gráfico Comparativo — Brendi vs iFood</div>
+      <div style="display:flex;gap:8px;margin-bottom:12px">
+        <div style="display:flex;background:var(--surface2);border:1px solid var(--border);border-radius:8px;overflow:hidden">
+          <button id="dv_gchart_valor"   class="filtro-btn filtro-ativo" onclick="setDeliveryChart('valor')">Valor (R$)</button>
+          <button id="dv_gchart_pedidos" class="filtro-btn"              onclick="setDeliveryChart('pedidos')">Pedidos</button>
+          <button id="dv_gchart_novos"   class="filtro-btn"              onclick="setDeliveryChart('novos')">Novos Clientes</button>
+        </div>
+      </div>
+      <div class="chart-card" style="margin-bottom:20px">
+        <div class="chart-wrap" style="height:260px"><canvas id="chartDelivery"></canvas></div>
+      </div>
+
+      <!-- Tabela semanal -->
+      <div class="sec">Detalhamento Semanal</div>
+      <div id="deliveryList"></div>
+
+    </div><!-- /delivery -->
 
   </div><!-- /content -->
 </div><!-- /main -->
@@ -955,6 +1043,7 @@ function changeWeek(d) {
   // Atualiza a aba que estiver aberta
   if (paginaAtiva === 'shows')    { renderMesTabs(); renderShows(); renderRanking(); renderChartShows(); }
   if (paginaAtiva === 'domingos') { renderDomingos(); }
+  if (paginaAtiva === 'delivery') { renderDelivery(); }
   if (paginaAtiva === 'graficos') renderGraficos();
   if (paginaAtiva === 'metricas') renderMetricas();
 }
@@ -989,6 +1078,7 @@ function showPage(id, el) {
   if (id === 'metricas') renderMetricas();
   if (id === 'shows')    { renderMesTabs(); renderShows(); renderRanking(); renderChartShows(); }
   if (id === 'domingos') { renderDomingos(); }
+  if (id === 'delivery') { renderDelivery(); }
 }
 
 // ════════════════════════════════
@@ -2038,6 +2128,338 @@ function renderDomingos() {
 }
 
 // ════════════════════════════════
+// DELIVERY
+// ════════════════════════════════
+
+// Estrutura: DB.delivery = { [mesId]: [ {label, brendi:{pedidos,novos,total}, ifood:{pedidos,novos,total}}, ... ] }
+
+const DELIVERY_MESES = [
+  { id:'ago', nome:'Agosto 2025' },
+  { id:'set', nome:'Setembro 2025' },
+  { id:'out', nome:'Outubro 2025' },
+  { id:'nov', nome:'Novembro 2025' },
+  { id:'dez', nome:'Dezembro 2025' },
+  { id:'jan', nome:'Janeiro 2026' },
+  { id:'fev', nome:'Fevereiro 2026' },
+  { id:'mar', nome:'Março 2026' },
+];
+
+// Dados históricos pré-carregados do PDF
+const DELIVERY_HISTORICO = {
+  ago: [
+    { label:'28/07–03/08', brendi:{pedidos:12,novos:5,total:'1.062,04'}, ifood:{pedidos:13,novos:6,total:'1.665,71'} },
+    { label:'04/08–10/08', brendi:{pedidos:15,novos:2,total:'1.469,87'}, ifood:{pedidos:4, novos:2,total:'497,60'} },
+    { label:'11/08–17/08', brendi:{pedidos:11,novos:3,total:'1.266,41'}, ifood:{pedidos:11,novos:7,total:'838,60'} },
+    { label:'18/08–24/08', brendi:{pedidos:13,novos:2,total:'1.845,99'}, ifood:{pedidos:5, novos:2,total:'791,20'} },
+    { label:'25/08–31/08', brendi:{pedidos:11,novos:3,total:'1.050,93'}, ifood:{pedidos:13,novos:5,total:'1.460,11'} },
+  ],
+  set: [
+    { label:'01/09–07/09', brendi:{pedidos:13,novos:3,total:'1.124,60'}, ifood:{pedidos:8,novos:5,total:'663,51'} },
+    { label:'08/09–14/09', brendi:{pedidos:18,novos:2,total:'1.378,68'}, ifood:{pedidos:8,novos:4,total:'678,50'} },
+    { label:'15/09–21/09', brendi:{pedidos:30,novos:14,total:'3.097,03'}, ifood:{pedidos:9,novos:6,total:'764,41'} },
+    { label:'22/09–28/09', brendi:{pedidos:17,novos:4,total:'1.343,90'}, ifood:{pedidos:9,novos:5,total:'814,60'} },
+  ],
+  out: [
+    { label:'29/09–05/10', brendi:{pedidos:18,novos:10,total:'1.574,18'}, ifood:{pedidos:17,novos:11,total:'2.214,98'} },
+    { label:'06/10–12/10', brendi:{pedidos:13,novos:8,total:'1.509,10'}, ifood:{pedidos:11,novos:6,total:'1.060,48'} },
+    { label:'13/10–19/10', brendi:{pedidos:11,novos:5,total:'1.006,91'}, ifood:{pedidos:8,novos:4,total:'695,01'} },
+    { label:'20/10–26/10', brendi:{pedidos:12,novos:8,total:'1.133,25'}, ifood:{pedidos:14,novos:4,total:'1.558,90'} },
+    { label:'27/10–02/11', brendi:{pedidos:21,novos:9,total:'1.886,11'}, ifood:{pedidos:14,novos:4,total:'1.466,80'} },
+  ],
+  nov: [
+    { label:'03/11–09/11', brendi:{pedidos:18,novos:6,total:'1.663,42'}, ifood:{pedidos:18,novos:10,total:'1.455,88'} },
+    { label:'10/11–16/11', brendi:{pedidos:10,novos:4,total:'1.033,26'}, ifood:{pedidos:14,novos:6,total:'1.413,89'} },
+    { label:'17/11–23/11', brendi:{pedidos:21,novos:14,total:'1.882,36'}, ifood:{pedidos:20,novos:12,total:'1.994,61'} },
+    { label:'24/11–30/11', brendi:{pedidos:15,novos:8,total:'1.047,81'}, ifood:{pedidos:18,novos:5,total:'1.784,51'} },
+  ],
+  dez: [
+    { label:'01/12–07/12', brendi:{pedidos:28,novos:8,total:'2.359,55'}, ifood:{pedidos:21,novos:8,total:'1.589,38'} },
+    { label:'08/12–14/12', brendi:{pedidos:12,novos:4,total:'834,10'}, ifood:{pedidos:11,novos:8,total:'1.340,91'} },
+    { label:'15/12–21/12', brendi:{pedidos:14,novos:8,total:'1.657,01'}, ifood:{pedidos:9,novos:4,total:'784,71'} },
+    { label:'22/12–28/12', brendi:{pedidos:8,novos:4,total:'892,15'}, ifood:{pedidos:8,novos:5,total:'909,40'} },
+  ],
+  jan: [
+    { label:'29/12–04/01', brendi:{pedidos:7,novos:3,total:'625,85'}, ifood:{pedidos:11,novos:5,total:'1.478,92'} },
+    { label:'05/01–11/01', brendi:{pedidos:10,novos:3,total:'1.130,75'}, ifood:{pedidos:3,novos:0,total:'357,51'} },
+    { label:'12/01–18/01', brendi:{pedidos:6,novos:2,total:'629,80'}, ifood:{pedidos:12,novos:6,total:'1.014,28'} },
+    { label:'19/01–25/01', brendi:{pedidos:9,novos:6,total:'1.063,10'}, ifood:{pedidos:8,novos:6,total:'1.007,21'} },
+    { label:'26/01–01/02', brendi:{pedidos:4,novos:1,total:'469,75'}, ifood:{pedidos:10,novos:6,total:'912,01'} },
+  ],
+  fev: [
+    { label:'02/02–08/02', brendi:{pedidos:7,novos:1,total:'790,64'}, ifood:{pedidos:10,novos:7,total:'858,90'} },
+    { label:'09/02–15/02', brendi:{pedidos:4,novos:3,total:'453,90'}, ifood:{pedidos:17,novos:5,total:'2.095,92'} },
+    { label:'16/02–22/02', brendi:{pedidos:7,novos:4,total:'826,31'}, ifood:{pedidos:7,novos:5,total:'1.157,72'} },
+    { label:'23/02–01/03', brendi:{pedidos:8,novos:3,total:'700,76'}, ifood:{pedidos:10,novos:7,total:'1.011,82'} },
+  ],
+  mar: [
+    { label:'02/03–08/03', brendi:{pedidos:6,novos:3,total:'825,50'}, ifood:{pedidos:17,novos:7,total:'1.537,74'} },
+    { label:'09/03–15/03', brendi:{pedidos:4,novos:0,total:'429,30'}, ifood:{pedidos:15,novos:7,total:'1.787,05'} },
+    { label:'16/03–22/03', brendi:{pedidos:7,novos:4,total:'613,50'}, ifood:{pedidos:14,novos:8,total:'1.094,85'} },
+    { label:'23/03–01/04', brendi:{pedidos:1,novos:0,total:'155,60'}, ifood:{pedidos:11,novos:2,total:'907,06'} },
+  ],
+};
+
+function initDelivery() {
+  if (!DB.delivery) {
+    DB.delivery = {};
+    // Pré-carrega histórico
+    Object.keys(DELIVERY_HISTORICO).forEach(mes => {
+      DB.delivery[mes] = JSON.parse(JSON.stringify(DELIVERY_HISTORICO[mes]));
+    });
+  }
+}
+
+let dvFiltro = 'mes';
+let dvChart_tipo = 'valor';
+let chartDeliveryInst = null;
+
+function getDeliveryMesSel() {
+  return document.getElementById('dv_sel_mes')?.value || 'mar';
+}
+
+function setDeliveryFiltro(f) {
+  dvFiltro = f;
+  document.querySelectorAll('.filtro-btn[id^="dv_filtro_"]').forEach(b => b.classList.remove('filtro-ativo'));
+  document.getElementById('dv_filtro_' + f).classList.add('filtro-ativo');
+  renderDelivery();
+}
+
+function setDeliveryChart(t) {
+  dvChart_tipo = t;
+  document.querySelectorAll('.filtro-btn[id^="dv_gchart_"]').forEach(b => b.classList.remove('filtro-ativo'));
+  document.getElementById('dv_gchart_' + t).classList.add('filtro-ativo');
+  renderChartDelivery();
+}
+
+function addSemanaDelivery() {
+  const mes = getDeliveryMesSel();
+  if (!DB.delivery[mes]) DB.delivery[mes] = [];
+  DB.delivery[mes].push({ label:'Nova semana', brendi:{pedidos:'',novos:'',total:''}, ifood:{pedidos:'',novos:'',total:''} });
+  renderDelivery();
+  autoSave();
+}
+
+function removerSemanaDelivery(mes, idx) {
+  DB.delivery[mes].splice(idx, 1);
+  renderDelivery();
+  autoSave();
+}
+
+function updateDelivery(mes, idx, plat, campo, valor) {
+  if (!DB.delivery[mes]) return;
+  DB.delivery[mes][idx][plat][campo] = valor;
+  calcDeliveryKPIs();
+  sincronizarDeliveryComDashboard();
+}
+
+function updateDeliveryLabel(mes, idx, valor) {
+  if (!DB.delivery[mes]) return;
+  DB.delivery[mes][idx].label = valor;
+}
+
+function parseDV(v) { return parseFloat((v||'0').toString().replace(/\./g,'').replace(',','.')) || 0; }
+
+function calcDeliveryKPIs() {
+  const mes = getDeliveryMesSel();
+  const semanas = DB.delivery[mes] || [];
+  let pedidos = 0, novos = 0, total = 0;
+  semanas.forEach(s => {
+    pedidos += (parseInt(s.brendi?.pedidos)||0) + (parseInt(s.ifood?.pedidos)||0);
+    novos   += (parseInt(s.brendi?.novos)||0)   + (parseInt(s.ifood?.novos)||0);
+    total   += parseDV(s.brendi?.total) + parseDV(s.ifood?.total);
+  });
+  const setText = (id,v) => { const el=document.getElementById(id); if(el) el.textContent=v; };
+  setText('dv_k_pedidos', pedidos || '—');
+  setText('dv_k_total',   total > 0 ? formatBR(total) : '—');
+  setText('dv_k_novos',   novos || '—');
+}
+
+// Sincroniza totais de delivery com a campanha delivery do dashboard
+function sincronizarDeliveryComDashboard() {
+  // Pega a semana atual do dashboard e sincroniza com o mês/semana de delivery correspondente
+  const s = DB.semanas[currentWeek];
+  if (!s) return;
+  const label = (s.label||'').toLowerCase();
+  // Detecta o mês da semana atual
+  let mesId = null;
+  if (label.includes('março')) mesId = 'mar';
+  else if (label.includes('fevereiro')) mesId = 'fev';
+  else if (label.includes('janeiro')) mesId = 'jan';
+  else if (label.includes('dezembro')) mesId = 'dez';
+  else if (label.includes('novembro')) mesId = 'nov';
+  else if (label.includes('outubro')) mesId = 'out';
+  else if (label.includes('setembro')) mesId = 'set';
+  else if (label.includes('agosto')) mesId = 'ago';
+  if (!mesId || !DB.delivery[mesId]) return;
+
+  // Soma todas as semanas do mês para o campo delivery do dashboard
+  let totalPedidos = 0, totalValor = 0;
+  DB.delivery[mesId].forEach(sem => {
+    totalPedidos += (parseInt(sem.brendi?.pedidos)||0) + (parseInt(sem.ifood?.pedidos)||0);
+    totalValor   += parseDV(sem.brendi?.total) + parseDV(sem.ifood?.total);
+  });
+
+  // Atualiza o campo delivery da campanha na semana atual
+  const campDelivery = s.campanhas?.find(c => c.tipo === 'delivery');
+  if (campDelivery) {
+    campDelivery.pedidos     = String(totalPedidos);
+    campDelivery.total_compras = formatBR(totalValor);
+    recalcTudo();
+  }
+}
+
+function getSemanasFiltradas() {
+  const mes = getDeliveryMesSel();
+  if (dvFiltro === 'tudo') {
+    // Retorna todas as semanas de todos os meses
+    const todas = [];
+    DELIVERY_MESES.forEach(m => {
+      (DB.delivery[m.id]||[]).forEach(s => todas.push({ ...s, _mes: m.nome }));
+    });
+    return todas;
+  }
+  return DB.delivery[mes] || [];
+}
+
+function renderDelivery() {
+  initDelivery();
+  const mes = getDeliveryMesSel();
+  const semanas = dvFiltro === 'tudo' ? getSemanasFiltradas() : (DB.delivery[mes] || []);
+  calcDeliveryKPIs();
+  renderChartDelivery();
+
+  const container = document.getElementById('deliveryList');
+  if (!container) return;
+
+  if (semanas.length === 0) {
+    container.innerHTML = `<div style="text-align:center;padding:40px;color:var(--muted);font-size:0.82rem">Nenhuma semana cadastrada.</div>`;
+    return;
+  }
+
+  let html = '';
+  semanas.forEach((s, idx) => {
+    const realIdx = dvFiltro === 'tudo' ? idx : idx;
+    const totalBrendi = parseDV(s.brendi?.total);
+    const totalIfood  = parseDV(s.ifood?.total);
+    const totalGeral  = totalBrendi + totalIfood;
+    const pedTot      = (parseInt(s.brendi?.pedidos)||0) + (parseInt(s.ifood?.pedidos)||0);
+    const novosTot    = (parseInt(s.brendi?.novos)||0)   + (parseInt(s.ifood?.novos)||0);
+    const mesRef      = dvFiltro === 'tudo' ? mes : mes;
+
+    html += `<div class="dv-card">
+      <div class="dv-semana-label">
+        <input style="background:transparent;border:none;border-bottom:1px dashed rgba(0,0,0,0.1);font-family:'Outfit',sans-serif;font-size:0.88rem;font-weight:500;color:var(--text);outline:none;width:200px;padding:2px 0"
+          value="${s.label||''}" oninput="updateDeliveryLabel('${mes}',${idx},this.value)"/>
+        ${s._mes ? `<span style="font-size:0.7rem;color:var(--muted)">${s._mes}</span>` : ''}
+        <button class="btn-del-show" onclick="removerSemanaDelivery('${mes}',${idx})">🗑</button>
+      </div>
+      <div class="dv-plat-grid">
+        <!-- BRENDI -->
+        <div class="dv-plat">
+          <div class="dv-plat-name"><span style="color:#f4b942">🟡</span> Brendi</div>
+          <div class="dv-row"><span class="dv-lbl">Pedidos</span>
+            <input class="dv-inp" type="number" value="${s.brendi?.pedidos||''}" placeholder="0"
+              oninput="updateDelivery('${mes}',${idx},'brendi','pedidos',this.value)"/></div>
+          <div class="dv-row"><span class="dv-lbl">Novos clientes</span>
+            <input class="dv-inp" type="number" value="${s.brendi?.novos||''}" placeholder="0"
+              oninput="updateDelivery('${mes}',${idx},'brendi','novos',this.value)"/></div>
+          <div class="dv-row"><span class="dv-lbl">Total (R$)</span>
+            <input class="dv-inp" value="${s.brendi?.total||''}" placeholder="0,00"
+              oninput="updateDelivery('${mes}',${idx},'brendi','total',this.value)"/></div>
+        </div>
+        <!-- IFOOD -->
+        <div class="dv-plat">
+          <div class="dv-plat-name"><span style="color:#ea1d2c">🔴</span> iFood</div>
+          <div class="dv-row"><span class="dv-lbl">Pedidos</span>
+            <input class="dv-inp" type="number" value="${s.ifood?.pedidos||''}" placeholder="0"
+              oninput="updateDelivery('${mes}',${idx},'ifood','pedidos',this.value)"/></div>
+          <div class="dv-row"><span class="dv-lbl">Novos clientes</span>
+            <input class="dv-inp" type="number" value="${s.ifood?.novos||''}" placeholder="0"
+              oninput="updateDelivery('${mes}',${idx},'ifood','novos',this.value)"/></div>
+          <div class="dv-row"><span class="dv-lbl">Total (R$)</span>
+            <input class="dv-inp" value="${s.ifood?.total||''}" placeholder="0,00"
+              oninput="updateDelivery('${mes}',${idx},'ifood','total',this.value)"/></div>
+        </div>
+      </div>
+      <div class="dv-total-row">
+        <div class="dv-tot"><span class="dv-tot-lbl">Total pedidos</span><span class="dv-tot-val">${pedTot || '—'}</span></div>
+        <div class="dv-tot"><span class="dv-tot-lbl">Faturamento total</span><span class="dv-tot-val">${totalGeral > 0 ? 'R$ '+formatBR(totalGeral) : '—'}</span></div>
+        <div class="dv-tot"><span class="dv-tot-lbl">Novos clientes</span><span class="dv-tot-val">${novosTot || '—'}</span></div>
+        <div class="dv-tot"><span class="dv-tot-lbl">Ticket médio</span><span class="dv-tot-val">${pedTot > 0 && totalGeral > 0 ? 'R$ '+formatBR(totalGeral/pedTot) : '—'}</span></div>
+        <div class="dv-tot"><span class="dv-tot-lbl">Brendi</span><span class="dv-tot-val" style="color:#f4b942">${totalBrendi > 0 ? 'R$ '+formatBR(totalBrendi) : '—'}</span></div>
+        <div class="dv-tot"><span class="dv-tot-lbl">iFood</span><span class="dv-tot-val" style="color:#ea1d2c">${totalIfood > 0 ? 'R$ '+formatBR(totalIfood) : '—'}</span></div>
+      </div>
+    </div>`;
+  });
+  container.innerHTML = html;
+}
+
+function renderChartDelivery() {
+  const canvas = document.getElementById('chartDelivery');
+  if (!canvas) return;
+  if (chartDeliveryInst) { chartDeliveryInst.destroy(); chartDeliveryInst = null; }
+
+  const mes = getDeliveryMesSel();
+  let semanas = [];
+  if (dvFiltro === 'tudo') {
+    DELIVERY_MESES.forEach(m => {
+      (DB.delivery[m.id]||[]).forEach(s => semanas.push({ ...s, _label: m.nome.substring(0,3)+' '+s.label.substring(0,5) }));
+    });
+  } else {
+    semanas = (DB.delivery[mes]||[]).map(s => ({ ...s, _label: s.label }));
+  }
+
+  if (semanas.length === 0) return;
+
+  const labels = semanas.map(s => s._label || s.label);
+  let brendiData, ifoodData;
+
+  if (dvChart_tipo === 'valor') {
+    brendiData = semanas.map(s => parseDV(s.brendi?.total));
+    ifoodData  = semanas.map(s => parseDV(s.ifood?.total));
+  } else if (dvChart_tipo === 'pedidos') {
+    brendiData = semanas.map(s => parseInt(s.brendi?.pedidos)||0);
+    ifoodData  = semanas.map(s => parseInt(s.ifood?.pedidos)||0);
+  } else {
+    brendiData = semanas.map(s => parseInt(s.brendi?.novos)||0);
+    ifoodData  = semanas.map(s => parseInt(s.ifood?.novos)||0);
+  }
+
+  chartDeliveryInst = new Chart(canvas, {
+    type: 'bar',
+    plugins: [ChartDataLabels],
+    data: {
+      labels,
+      datasets: [
+        { label:'Brendi', data:brendiData, backgroundColor:'rgba(244,185,66,0.5)', borderColor:'#f4b942', borderWidth:1.5, borderRadius:4 },
+        { label:'iFood',  data:ifoodData,  backgroundColor:'rgba(234,29,44,0.4)',  borderColor:'#ea1d2c', borderWidth:1.5, borderRadius:4 },
+      ]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{
+        legend:{ labels:{ font:{family:'Outfit',size:11}, color:'#8a8a7e' } },
+        datalabels:{
+          anchor:'end', align:'end', offset:2,
+          font:{family:'Outfit',size:8,weight:'500'},
+          color:'#5c5c5c',
+          formatter: (v, ctx) => {
+            if (!v || v === 0) return '';
+            return dvChart_tipo === 'valor' ? 'R$\n'+formatBR(v) : v;
+          },
+          clip:false,
+        }
+      },
+      layout:{ padding:{ top:28 } },
+      scales:{
+        x:{ ticks:{font:{family:'Outfit',size:8},color:'#8a8a7e',maxRotation:45}, grid:{color:'rgba(0,0,0,0.04)'} },
+        y:{ ticks:{font:{family:'Outfit',size:9},color:'#8a8a7e', callback: v => dvChart_tipo==='valor' ? 'R$ '+formatBR(v) : v }, grid:{color:'rgba(0,0,0,0.04)'} }
+      }
+    }
+  });
+}
+
+// ════════════════════════════════
 // FIREBASE — NUVEM
 // ════════════════════════════════
 
@@ -2326,6 +2748,7 @@ function iniciar(dadosNuvem) {
     // Garante estrutura mínima
     if (!DB.semanas || DB.semanas.length === 0) DB.semanas = [semanaVazia()];
     initMeses();
+    initDelivery();
     injetarShowsNasSemanas();
     currentWeek = Math.max(0, DB.semanas.length - 1);
     render();
