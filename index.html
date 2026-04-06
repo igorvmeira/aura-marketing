@@ -668,15 +668,6 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;font
             <button id="dom_filtro_mes"  class="filtro-btn"              onclick="setDomingosFiltro('mes')">Por mês</button>
           </div>
           <select id="dom_sel_mes" class="inp-show" style="display:none;width:auto;padding:7px 12px" onchange="renderDomingos()">
-            <option value="marco">Março 2026</option>
-            <option value="abril">Abril 2026</option>
-            <option value="fevereiro">Fevereiro 2026</option>
-            <option value="janeiro">Janeiro 2026</option>
-            <option value="dezembro">Dezembro 2025</option>
-            <option value="novembro">Novembro 2025</option>
-            <option value="outubro">Outubro 2025</option>
-            <option value="setembro">Setembro 2025</option>
-            <option value="agosto">Agosto 2025</option>
           </select>
         </div>
         <button class="btn btn-primary" onclick="addDomingo()">
@@ -2079,8 +2070,57 @@ function setDomingosFiltro(f) {
   document.querySelectorAll('.filtro-btn[id^="dom_filtro_"]').forEach(b => b.classList.remove('filtro-ativo'));
   document.getElementById('dom_filtro_' + f)?.classList.add('filtro-ativo');
   const sel = document.getElementById('dom_sel_mes');
-  if (sel) sel.style.display = f === 'mes' ? '' : 'none';
+  if (sel) {
+    if (f === 'mes') {
+      sel.style.display = '';
+      popularSelectMesesDomingos();
+    } else {
+      sel.style.display = 'none';
+    }
+  }
   renderDomingos();
+}
+
+function popularSelectMesesDomingos() {
+  const sel = document.getElementById('dom_sel_mes');
+  if (!sel) return;
+
+  // Detecta quais meses têm ao menos um domingo cadastrado
+  const mesesMap = {
+    '01':'janeiro','02':'fevereiro','03':'marco','04':'abril','05':'maio',
+    '06':'junho','07':'julho','08':'agosto','09':'setembro','10':'outubro',
+    '11':'novembro','12':'dezembro'
+  };
+  const nomesExibicao = {
+    'janeiro':'Janeiro','fevereiro':'Fevereiro','marco':'Março','abril':'Abril',
+    'maio':'Maio','junho':'Junho','julho':'Julho','agosto':'Agosto',
+    'setembro':'Setembro','outubro':'Outubro','novembro':'Novembro','dezembro':'Dezembro'
+  };
+
+  const mesesComDados = new Set();
+  todosDomingos().forEach(d => {
+    const data = d.data || '';
+    // Tenta extrair mês pelo padrão dd/mm
+    const m = data.match(/\/(\d{2})/);
+    if (m && mesesMap[m[1]]) {
+      mesesComDados.add(mesesMap[m[1]]);
+    } else {
+      // Tenta pelo nome do mês no texto (ex: "Domingo, 01 de março")
+      const lower = data.toLowerCase();
+      Object.values(mesesMap).forEach(nome => {
+        const nomeAlt = nome === 'marco' ? 'março' : nome;
+        if (lower.includes(nomeAlt) || lower.includes(nome)) mesesComDados.add(nome);
+      });
+    }
+  });
+
+  const valorAtual = sel.value;
+  sel.innerHTML = [...mesesComDados].map(m =>
+    `<option value="${m}">${nomesExibicao[m] || m}</option>`
+  ).join('');
+
+  // Mantém seleção atual se ainda existe
+  if ([...mesesComDados].includes(valorAtual)) sel.value = valorAtual;
 }
 
 // Converte string de data (ex: "Domingo, 01/03", "01/03", "05/04") para Date para ordenação correta
