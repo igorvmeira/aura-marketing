@@ -2371,36 +2371,36 @@ function calcDeliveryKPIs() {
 
 // Sincroniza totais de delivery com a campanha delivery do dashboard
 function sincronizarDeliveryComDashboard() {
-  // Pega a semana atual do dashboard e sincroniza com o mês/semana de delivery correspondente
-  const s = DB.semanas[currentWeek];
-  if (!s) return;
-  const label = (s.label||'').toLowerCase();
-  // Detecta o mês da semana atual
-  let mesId = null;
-  if (label.includes('março')) mesId = 'mar';
-  else if (label.includes('fevereiro')) mesId = 'fev';
-  else if (label.includes('janeiro')) mesId = 'jan';
-  else if (label.includes('dezembro')) mesId = 'dez';
-  else if (label.includes('novembro')) mesId = 'nov';
-  else if (label.includes('outubro')) mesId = 'out';
-  else if (label.includes('setembro')) mesId = 'set';
-  else if (label.includes('agosto')) mesId = 'ago';
-  if (!mesId || !DB.delivery[mesId]) return;
+  // Não faz nada automaticamente — o usuário usa o botão "Exportar para Dashboard" em cada semana
+}
 
-  // Soma todas as semanas do mês para o campo delivery do dashboard
-  let totalPedidos = 0, totalValor = 0;
-  DB.delivery[mesId].forEach(sem => {
-    totalPedidos += (parseInt(sem.brendi?.pedidos)||0) + (parseInt(sem.ifood?.pedidos)||0);
-    totalValor   += parseDV(sem.brendi?.total) + parseDV(sem.ifood?.total);
-  });
+function exportarSemanaParaDashboard(mesId, idx) {
+  const sem = DB.delivery[mesId]?.[idx];
+  if (!sem) return;
 
-  // Atualiza o campo delivery da campanha na semana atual
-  const campDelivery = s.campanhas?.find(c => c.tipo === 'delivery');
-  if (campDelivery) {
-    campDelivery.pedidos     = String(totalPedidos);
-    campDelivery.total_compras = formatBR(totalValor);
-    recalcTudo();
+  const totalPedidos = (parseInt(sem.brendi?.pedidos)||0) + (parseInt(sem.ifood?.pedidos)||0);
+  const totalValor   = parseDV(sem.brendi?.total) + parseDV(sem.ifood?.total);
+
+  if (totalPedidos === 0 && totalValor === 0) {
+    toast('Preencha os dados da semana antes de exportar.');
+    return;
   }
+
+  // Pede ao usuário qual semana do dashboard
+  const opcoes = DB.semanas.map((s,i) => `${i}: ${s.label||'Semana '+(i+1)}`).join('\n');
+  const resp = prompt(`Para qual semana do Dashboard exportar?\n\n${opcoes}\n\nDigite o número:`);
+  if (resp === null) return;
+  const si = parseInt(resp);
+  if (isNaN(si) || si < 0 || si >= DB.semanas.length) { toast('Semana inválida.'); return; }
+
+  const campDelivery = DB.semanas[si].campanhas?.find(c => c.tipo === 'delivery');
+  if (!campDelivery) { toast('Esta semana não tem campanha de Delivery.'); return; }
+
+  campDelivery.pedidos       = String(totalPedidos);
+  campDelivery.total_compras = formatBR(totalValor);
+  recalcTudo();
+  autoSave();
+  toast(`✅ Exportado para: ${DB.semanas[si].label||'Semana '+(si+1)}`);
 }
 
 function getSemanasFiltradas() {
@@ -2446,7 +2446,13 @@ function renderDelivery() {
         <input style="background:transparent;border:none;border-bottom:1px dashed rgba(0,0,0,0.1);font-family:'Outfit',sans-serif;font-size:0.88rem;font-weight:500;color:var(--text);outline:none;width:200px;padding:2px 0"
           value="${s.label||''}" oninput="updateDeliveryLabel('${mes}',${idx},this.value)"/>
         ${s._mes ? `<span style="font-size:0.7rem;color:var(--muted)">${s._mes}</span>` : ''}
-        <button class="btn-del-show" onclick="removerSemanaDelivery('${mes}',${idx})">🗑</button>
+        <div style="display:flex;gap:6px;align-items:center">
+          <button class="btn btn-ghost" style="font-size:0.68rem;padding:5px 10px" onclick="exportarSemanaParaDashboard('${mes}',${idx})" title="Exportar para o Dashboard">
+            <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            Exportar
+          </button>
+          <button class="btn-del-show" onclick="removerSemanaDelivery('${mes}',${idx})">🗑</button>
+        </div>
       </div>
       <div class="dv-plat-grid">
         <!-- BRENDI -->
