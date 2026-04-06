@@ -796,9 +796,45 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;font
     <!-- Tooltip do calendário -->
     <div class="cal-tooltip" id="calTooltip"></div>
 
+    </div><!-- /agenda -->
+
   </div><!-- /content -->
 </div><!-- /main -->
 </div><!-- /layout -->
+
+<!-- MODAL EDIÇÃO AGENDA -->
+<div class="overlay" id="overlayAgenda" onclick="fecharEditarAgenda(event)">
+  <div class="modal" style="max-width:460px">
+    <div class="modal-head">
+      <div class="modal-ttl" id="agendaEditTtl">✏️ Editar Atração</div>
+      <button class="mcls" onclick="fecharEditarAgenda()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="margin-bottom:16px">
+        <div class="sec" style="margin-bottom:8px">Banda / Artista</div>
+        <input id="agendaEditNome" type="text" class="inp-show" style="width:100%" placeholder="Nome da banda"/>
+      </div>
+      <div style="margin-bottom:16px">
+        <div class="sec" style="margin-bottom:8px">Cachê (R$)</div>
+        <input id="agendaEditCache" type="text" class="inp-show" style="width:100%" placeholder="0,00"/>
+      </div>
+      <div style="margin-bottom:16px">
+        <div class="sec" style="margin-bottom:8px">Consumo (R$)</div>
+        <input id="agendaEditConsumo" type="text" class="inp-show" style="width:100%" placeholder="Deixe vazio para usar o padrão (R$ 90,00)"/>
+      </div>
+      <div style="display:flex;gap:10px">
+        <button class="btn btn-primary" style="flex:1;justify-content:center" onclick="salvarEditarAgenda()">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+          Salvar
+        </button>
+        <button class="btn btn-ghost" style="color:var(--red);border-color:var(--red)" onclick="removerBandaAgenda()">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>
+          Remover
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- MODAL EDIÇÃO DE SEMANA -->
 <div class="overlay" id="overlayEdit" onclick="fecharEdicao(event)">
@@ -2695,6 +2731,56 @@ function diaSemanaParaColuna(jsDay) {
   return jsDay === 0 ? 6 : jsDay - 1;
 }
 
+// ── EDIÇÃO DE ATRAÇÕES NA AGENDA ──
+let _agendaEdit = { mi:0, ni:0, bi:0 };
+
+function abrirEditarAgenda(mi, ni, bi) {
+  hideCalTooltip();
+  const noite = DB.meses[mi]?.noites?.[ni];
+  if (!noite) return;
+  const banda = noite.bandas?.[bi];
+  if (!banda) return;
+
+  _agendaEdit = { mi, ni, bi };
+  document.getElementById('agendaEditTtl').textContent = `✏️ ${noite.data || 'Editar Atração'}`;
+  document.getElementById('agendaEditNome').value    = banda.nome    || '';
+  document.getElementById('agendaEditCache').value   = banda.cache   || '';
+  document.getElementById('agendaEditConsumo').value = banda.consumo || '';
+  document.getElementById('overlayAgenda').classList.add('show');
+}
+
+function fecharEditarAgenda(ev) {
+  if (ev && ev.target !== document.getElementById('overlayAgenda')) return;
+  document.getElementById('overlayAgenda').classList.remove('show');
+}
+
+function salvarEditarAgenda() {
+  const { mi, ni, bi } = _agendaEdit;
+  const noite = DB.meses[mi]?.noites?.[ni];
+  if (!noite || !noite.bandas?.[bi]) return;
+  noite.bandas[bi].nome    = document.getElementById('agendaEditNome').value.trim();
+  noite.bandas[bi].cache   = document.getElementById('agendaEditCache').value.trim();
+  noite.bandas[bi].consumo = document.getElementById('agendaEditConsumo').value.trim();
+  document.getElementById('overlayAgenda').classList.remove('show');
+  renderAgenda();
+  autoSave();
+  toast('Atração atualizada! ✅');
+}
+
+function removerBandaAgenda() {
+  const { mi, ni, bi } = _agendaEdit;
+  const noite = DB.meses[mi]?.noites?.[ni];
+  if (!noite) return;
+  if (!confirm(`Remover "${noite.bandas[bi]?.nome}" desta noite?`)) return;
+  noite.bandas.splice(bi, 1);
+  // Se não sobrou nenhuma banda, remove a noite inteira
+  if (noite.bandas.length === 0) DB.meses[mi].noites.splice(ni, 1);
+  document.getElementById('overlayAgenda').classList.remove('show');
+  renderAgenda();
+  autoSave();
+  toast('Atração removida.');
+}
+
 function renderAgenda() {
   if (!DB.meses || DB.meses.length === 0) return;
   if (agendaMesIdx >= DB.meses.length) agendaMesIdx = 0;
@@ -2735,16 +2821,19 @@ function renderAgenda() {
     const temShow = noites.length > 0;
     const classes = ['cal-day', temShow ? 'tem-show' : '', ehHoje(d) ? 'hoje' : ''].filter(Boolean).join(' ');
 
-    const pills = noites.flatMap(noite =>
-      (noite.bandas || []).map(b => {
+    const pills = noites.flatMap((noite, ni) =>
+      (noite.bandas || []).map((b, bi) => {
         const temCache = parseBR(b.cache) > 0;
         const cls = temCache ? '' : 'sem-cache';
-        const nomes = b.nome || '?';
-        const cache = temCache ? ` · R$${b.cache}` : '';
+        // Encontra índices reais no DB.meses
+        const mi = agendaMesIdx;
+        const noiteIdx = (mes.noites || []).findIndex(n => n === noite || (n.data === noite.data && n.id === noite.id));
         return `<div class="cal-show-pill ${cls}"
           onmouseenter="showCalTooltip(event,'${noite.data}',${JSON.stringify((noite.bandas||[]).map(x=>x.nome+'|'+x.cache)).replace(/"/g,'&quot;')})"
           onmouseleave="hideCalTooltip()"
-          >${nomes}</div>`;
+          onclick="event.stopPropagation();abrirEditarAgenda(${mi},${noiteIdx},${bi})"
+          title="Clique para editar"
+          >${b.nome||'?'}</div>`;
       })
     ).join('');
 
