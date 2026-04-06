@@ -642,26 +642,43 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;font
       <!-- KPIs totais -->
       <div class="shows-kpi-grid" style="margin-bottom:18px">
         <div class="kpi-card">
-          <div class="kpi-lbl">17h – 19h <span style="font-size:0.55rem;color:var(--pos)">TOTAL</span></div>
+          <div class="kpi-lbl">17h – 19h <span style="font-size:0.55rem;color:var(--pos)">FILTRO</span></div>
           <div class="kpi-val" style="font-size:1.4rem">R$&nbsp;<span id="dk_1719">—</span></div>
-          <div style="font-size:0.68rem;color:var(--muted);margin-top:4px">Soma de todos os domingos</div>
+          <div style="font-size:0.68rem;color:var(--muted);margin-top:4px">Soma dos domingos filtrados</div>
         </div>
         <div class="kpi-card">
-          <div class="kpi-lbl">19h – 21h <span style="font-size:0.55rem;color:var(--pos)">TOTAL</span></div>
+          <div class="kpi-lbl">19h – 21h <span style="font-size:0.55rem;color:var(--pos)">FILTRO</span></div>
           <div class="kpi-val" style="font-size:1.4rem">R$&nbsp;<span id="dk_1921">—</span></div>
         </div>
         <div class="kpi-card">
-          <div class="kpi-lbl">21h – 23h <span style="font-size:0.55rem;color:var(--pos)">TOTAL</span></div>
+          <div class="kpi-lbl">21h – 23h <span style="font-size:0.55rem;color:var(--pos)">FILTRO</span></div>
           <div class="kpi-val" style="font-size:1.4rem">R$&nbsp;<span id="dk_2123">—</span></div>
         </div>
         <div class="kpi-card">
-          <div class="kpi-lbl">23h – 01h30 <span style="font-size:0.55rem;color:var(--pos)">TOTAL</span></div>
+          <div class="kpi-lbl">23h – 01h30 <span style="font-size:0.55rem;color:var(--pos)">FILTRO</span></div>
           <div class="kpi-val" style="font-size:1.4rem">R$&nbsp;<span id="dk_2301">—</span></div>
         </div>
       </div>
 
-      <!-- Botão adicionar -->
-      <div style="display:flex;gap:10px;margin-bottom:16px">
+      <!-- Filtro por mês + Adicionar -->
+      <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center;justify-content:space-between">
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <div style="display:flex;background:var(--surface2);border:1px solid var(--border);border-radius:8px;overflow:hidden">
+            <button id="dom_filtro_tudo" class="filtro-btn filtro-ativo" onclick="setDomingosFiltro('tudo')">Todos</button>
+            <button id="dom_filtro_mes"  class="filtro-btn"              onclick="setDomingosFiltro('mes')">Por mês</button>
+          </div>
+          <select id="dom_sel_mes" class="inp-show" style="display:none;width:auto;padding:7px 12px" onchange="renderDomingos()">
+            <option value="marco">Março 2026</option>
+            <option value="abril">Abril 2026</option>
+            <option value="fevereiro">Fevereiro 2026</option>
+            <option value="janeiro">Janeiro 2026</option>
+            <option value="dezembro">Dezembro 2025</option>
+            <option value="novembro">Novembro 2025</option>
+            <option value="outubro">Outubro 2025</option>
+            <option value="setembro">Setembro 2025</option>
+            <option value="agosto">Agosto 2025</option>
+          </select>
+        </div>
         <button class="btn btn-primary" onclick="addDomingo()">
           <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
           Adicionar domingo
@@ -2055,6 +2072,27 @@ function domingosSemana() {
   return s.domingos;
 }
 
+let domingosFiltro = 'tudo';
+
+function setDomingosFiltro(f) {
+  domingosFiltro = f;
+  document.querySelectorAll('.filtro-btn[id^="dom_filtro_"]').forEach(b => b.classList.remove('filtro-ativo'));
+  document.getElementById('dom_filtro_' + f)?.classList.add('filtro-ativo');
+  const sel = document.getElementById('dom_sel_mes');
+  if (sel) sel.style.display = f === 'mes' ? '' : 'none';
+  renderDomingos();
+}
+
+// Converte string de data (ex: "Domingo, 01/03", "01/03", "05/04") para Date para ordenação correta
+function parseDateDomingo(dataStr) {
+  const m = (dataStr || '').match(/(\d{1,2})\/(\d{2})(?:\/(\d{4}))?/);
+  if (!m) return new Date(9999, 0, 1); // datas sem formato vão para o fim
+  const dia = parseInt(m[1]);
+  const mes = parseInt(m[2]) - 1; // JS meses 0-indexed
+  const ano = m[3] ? parseInt(m[3]) : 2026;
+  return new Date(ano, mes, dia);
+}
+
 function todosDomingos() {
   const lista = [];
   DB.semanas.forEach((s, si) => {
@@ -2062,8 +2100,25 @@ function todosDomingos() {
       lista.push({ ...d, _semanaIdx: si, _domIdx: di });
     });
   });
-  // Ordena por data
-  return lista.sort((a, b) => (a.data || '').localeCompare(b.data || ''));
+  // Ordena por data crescente usando parse real de data
+  return lista.sort((a, b) => parseDateDomingo(a.data) - parseDateDomingo(b.data));
+}
+
+function domingosFiltrados() {
+  const todos = domingosFiltrados();
+  if (domingosFiltro !== 'mes') return todos;
+  const mesSel = (document.getElementById('dom_sel_mes')?.value || 'marco').toLowerCase();
+  return todos.filter(d => {
+    const data = (d.data || '').toLowerCase();
+    return data.includes(mesSel) || (() => {
+      // fallback: detecta pelo número do mês na data (ex: /03, /04)
+      const mesesMap = { 'marco':'03','março':'03','abril':'04','fevereiro':'02',
+                         'janeiro':'01','dezembro':'12','novembro':'11','outubro':'10',
+                         'setembro':'09','agosto':'08','julho':'07','junho':'06','maio':'05' };
+      const numMes = mesesMap[mesSel];
+      return numMes && data.includes('/'+numMes);
+    })();
+  });
 }
 
 function addDomingo() {
@@ -2088,7 +2143,7 @@ function updateDomingo(si, di, field, value) {
 }
 
 function calcDomingosKPIs() {
-  const todos = todosDomingos();
+  const todos = domingosFiltrados();
   const totais = { h1719:0, h1921:0, h2123:0, h2301:0 };
   todos.forEach(d => {
     FAIXAS.forEach(f => { totais[f.id] += parseBR(d[f.id]); });
@@ -2107,7 +2162,7 @@ function renderChartDomingos() {
   if (!canvas) return;
   if (chartDomingosInst) { chartDomingosInst.destroy(); chartDomingosInst = null; }
 
-  const todos = todosDomingos();
+  const todos = domingosFiltrados();
   if (todos.length === 0) return;
 
   const labels = todos.map(d => d.data || '—');
@@ -2154,7 +2209,7 @@ function renderChartDomingos() {
 }
 
 function renderDomingos() {
-  const todos = todosDomingos();
+  const todos = domingosFiltrados();
   const container = document.getElementById('domingosList');
   if (!container) return;
 
