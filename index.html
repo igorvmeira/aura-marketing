@@ -2105,13 +2105,12 @@ function todosDomingos() {
 }
 
 function domingosFiltrados() {
-  const todos = domingosFiltrados();
+  const todos = todosDomingos();
   if (domingosFiltro !== 'mes') return todos;
   const mesSel = (document.getElementById('dom_sel_mes')?.value || 'marco').toLowerCase();
   return todos.filter(d => {
     const data = (d.data || '').toLowerCase();
     return data.includes(mesSel) || (() => {
-      // fallback: detecta pelo número do mês na data (ex: /03, /04)
       const mesesMap = { 'marco':'03','março':'03','abril':'04','fevereiro':'02',
                          'janeiro':'01','dezembro':'12','novembro':'11','outubro':'10',
                          'setembro':'09','agosto':'08','julho':'07','junho':'06','maio':'05' };
