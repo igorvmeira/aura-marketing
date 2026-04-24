@@ -2029,7 +2029,7 @@ function carregarAgendaPDF() {
     autoSave();
     toast('Agenda carregada! ✅');
   } else {
-    toast(`Nenhuma agenda encontrada para "${m.nome}". Verifique o nome do mês.`);`);
+    toast(`Nenhuma agenda encontrada para "${m.nome}". Verifique o nome do mês.`);
   }
 }
 
@@ -2123,12 +2123,10 @@ function popularSelectMesesDomingos() {
   const mesesComDados = new Set();
   todosDomingos().forEach(d => {
     const data = d.data || '';
-    // Tenta extrair mês pelo padrão dd/mm
-    const m = data.match(/\/(\d{2})/);
-    if (m && mesesMap[m[1]]) {
-      mesesComDados.add(mesesMap[m[1]]);
+    const match = data.match(/\/(\d{2})/);
+    if (match && mesesMap[match[1]]) {
+      mesesComDados.add(mesesMap[match[1]]);
     } else {
-      // Tenta pelo nome do mês no texto (ex: "Domingo, 01 de março")
       const lower = data.toLowerCase();
       Object.values(mesesMap).forEach(nome => {
         const nomeAlt = nome === 'marco' ? 'março' : nome;
@@ -2138,11 +2136,10 @@ function popularSelectMesesDomingos() {
   });
 
   const valorAtual = sel.value;
-  sel.innerHTML = [...mesesComDados].map(m =>
-    `<option value="${m}">${nomesExibicao[m] || m}</option>`
-  ).join('');
+  sel.innerHTML = [...mesesComDados].map(function(mes) {
+    return '<option value="' + mes + '">' + (nomesExibicao[mes] || mes) + '</option>';
+  }).join('');
 
-  // Mantém seleção atual se ainda existe
   if ([...mesesComDados].includes(valorAtual)) sel.value = valorAtual;
 }
 
