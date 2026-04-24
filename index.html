@@ -1510,6 +1510,17 @@ function initMeses() {
       ];
     }
 
+    // Garante que meses novos existam mesmo se DB já estava salvo sem eles
+    const mesesPadrao = [
+      { id: 'abril2026', nome: 'Abril 2026', noites: [] },
+      { id: 'maio2026',  nome: 'Maio 2026',  noites: [] },
+    ];
+    mesesPadrao.forEach(mp => {
+      if (!DB.meses.find(m => m && m.id === mp.id)) {
+        DB.meses.push({ id: mp.id, nome: mp.nome, noites: [] });
+      }
+    });
+
     // Garante que abril tem agenda se vazio
     const abril = DB.meses.find(m => m && m.id === 'abril2026');
     if (abril && (!abril.noites || abril.noites.length === 0)) {
