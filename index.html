@@ -1506,6 +1506,7 @@ function initMeses() {
       DB.meses = [
         { id: 'marco2026', nome: 'Março 2026', noites: noitesMigradas },
         { id: 'abril2026', nome: 'Abril 2026', noites: [] },
+        { id: 'maio2026',  nome: 'Maio 2026',  noites: [] },
       ];
     }
 
@@ -2010,17 +2011,13 @@ function carregarAgendaPDF() {
 
   const eMarca = nomeM.includes('março') || nomeM.includes('marco');
   const eAbril = nomeM.includes('abril');
+  const eMaio  = nomeM.includes('maio');
 
-  let fonte = null;
   let novasNoites = [];
 
-  if (eMarca) {
-    fonte = SHOWS_MARCO_2026;
-    novasNoites = Object.values(SHOWS_MARCO_2026).flat();
-  } else if (eAbril) {
-    fonte = SHOWS_ABRIL_2026;
-    novasNoites = Object.values(SHOWS_ABRIL_2026).flat();
-  }
+  if (eMarca)     novasNoites = Object.values(SHOWS_MARCO_2026).flat();
+  else if (eAbril) novasNoites = Object.values(SHOWS_ABRIL_2026).flat();
+  else if (eMaio)  novasNoites = Object.values(SHOWS_MAIO_2026).flat();
 
   if (novasNoites.length > 0) {
     if (m.noites && m.noites.length > 0) {
@@ -2032,7 +2029,7 @@ function carregarAgendaPDF() {
     autoSave();
     toast('Agenda carregada! ✅');
   } else {
-    toast(`Nenhuma agenda encontrada para "${m.nome}".`);
+    toast(`Nenhuma agenda encontrada para "${m.nome}". Verifique o nome do mês.`);`);
   }
 }
 
@@ -2688,7 +2685,7 @@ function renderChartDelivery() {
 let agendaMesIdx = 0; // índice no DB.meses
 
 const MESES_NOME = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
-const MESES_ANO = { 'marco2026':{ m:2, a:2026 }, 'abril2026':{ m:3, a:2026 } };
+const MESES_ANO = { 'marco2026':{ m:2, a:2026 }, 'abril2026':{ m:3, a:2026 }, 'maio2026':{ m:4, a:2026 } };
 
 function getMesAno(mesId) {
   // Tenta extrair mês/ano do nome do mês (ex: "Março 2026")
@@ -3061,7 +3058,94 @@ const SHOWS_MARCO_2026 = {
   ],
 };
 
-// ════ AGENDA ABRIL 2026 ════
+// ════ AGENDA MAIO 2026 ════
+const SHOWS_MAIO_2026 = {
+  18: [ // Semana 18 (01–03/05)
+    { id:201, data:'Sexta-feira, 01/05', couvert:'', bandas:[
+      { nome:'Gabriel Silva', cache:'650,00' },
+      { nome:'Grupo Zero4',   cache:'500,00' }]},
+    { id:202, data:'Sábado, 02/05', couvert:'', bandas:[
+      { nome:'DJ Froes', cache:'150,00' },
+      { nome:'Jarlan',   cache:'700,00' },
+      { nome:'Vitinha',  cache:'800,00' }]},
+    { id:203, data:'Domingo, 03/05', couvert:'', bandas:[
+      { nome:'Brankinho', cache:'600,00'   },
+      { nome:'Ser Samba', cache:'3.000,00' }]},
+  ],
+  19: [ // Semana 19 (05–10/05)
+    { id:204, data:'Terça-feira, 05/05', couvert:'', bandas:[
+      { nome:'Well Freitas', cache:'350,00' }]},
+    { id:205, data:'Quarta-feira, 06/05', couvert:'', bandas:[
+      { nome:'Tiago Mendes', cache:'250,00' }]},
+    { id:206, data:'Quinta-feira, 07/05', couvert:'', bandas:[
+      { nome:'Flavio Linns', cache:'450,00' }]},
+    { id:207, data:'Sexta-feira, 08/05', couvert:'', bandas:[
+      { nome:'Gabriel Silva', cache:'650,00' },
+      { nome:'Vitinha',       cache:'800,00' }]},
+    { id:208, data:'Sábado, 09/05', couvert:'', bandas:[
+      { nome:'Brankinho',     cache:'600,00' },
+      { nome:'DJ Froes',      cache:'150,00' },
+      { nome:'Gabriel Silva', cache:'650,00' },
+      { nome:'Andrezinho',    cache:'800,00' }]},
+    { id:209, data:'Domingo, 10/05', couvert:'', bandas:[
+      { nome:'Badalação', cache:'450,00'   },
+      { nome:'Ser Samba', cache:'3.000,00' }]},
+  ],
+  20: [ // Semana 20 (12–17/05)
+    { id:210, data:'Terça-feira, 12/05', couvert:'', bandas:[
+      { nome:'Robinho', cache:'300,00' }]},
+    { id:211, data:'Quarta-feira, 13/05', couvert:'', bandas:[
+      { nome:'Dioliver', cache:'350,00' }]},
+    { id:212, data:'Sexta-feira, 15/05', couvert:'', bandas:[
+      { nome:'Gabriel Silva', cache:'650,00' },
+      { nome:'Vitinha',       cache:'800,00' }]},
+    { id:213, data:'Sábado, 16/05', couvert:'', bandas:[
+      { nome:'Brankinho',  cache:'600,00' },
+      { nome:'DJ Nekko',   cache:'300,00' },
+      { nome:'Jarlan',     cache:'700,00' },
+      { nome:'Grupo Zero4',cache:'500,00' }]},
+    { id:214, data:'Domingo, 17/05', couvert:'', bandas:[
+      { nome:'Ser Samba', cache:'3.000,00' }]},
+  ],
+  21: [ // Semana 21 (19–24/05)
+    { id:215, data:'Terça-feira, 19/05', couvert:'', bandas:[
+      { nome:'Well Freitas', cache:'350,00' }]},
+    { id:216, data:'Quarta-feira, 20/05', couvert:'', bandas:[
+      { nome:'Tiago Mendes', cache:'250,00' }]},
+    { id:217, data:'Quinta-feira, 21/05', couvert:'', bandas:[
+      { nome:'Flavio Linns', cache:'450,00' }]},
+    { id:218, data:'Sexta-feira, 22/05', couvert:'', bandas:[
+      { nome:'Jarlan',     cache:'700,00' },
+      { nome:'Grupo Zero4',cache:'500,00' }]},
+    { id:219, data:'Sábado, 23/05', couvert:'', bandas:[
+      { nome:'Brankinho',     cache:'600,00' },
+      { nome:'DJ Nekko',      cache:'300,00' },
+      { nome:'Vitinha',       cache:'800,00' },
+      { nome:'Kennedy Lima',  cache:'600,00' }]},
+    { id:220, data:'Domingo, 24/05', couvert:'', bandas:[
+      { nome:'Gabriel Silva', cache:'650,00'   },
+      { nome:'Ser Samba',     cache:'3.000,00' }]},
+  ],
+  22: [ // Semana 22 (26–31/05)
+    { id:221, data:'Terça-feira, 26/05', couvert:'', bandas:[
+      { nome:'Robinho', cache:'300,00' }]},
+    { id:222, data:'Quarta-feira, 27/05', couvert:'', bandas:[
+      { nome:'Dioliver', cache:'350,00' }]},
+    { id:223, data:'Quinta-feira, 28/05', couvert:'', bandas:[
+      { nome:'Flavio Linns', cache:'450,00' }]},
+    { id:224, data:'Sexta-feira, 29/05', couvert:'', bandas:[
+      { nome:'Gabriel Silva',   cache:'650,00' },
+      { nome:'Encontro Casual', cache:'650,00' }]},
+    { id:225, data:'Sábado, 30/05', couvert:'', bandas:[
+      { nome:'Brankinho', cache:'600,00'   },
+      { nome:'DJ Froes',  cache:'150,00'   },
+      { nome:'Vitinha',   cache:'800,00'   },
+      { nome:'Jarlan',    cache:'700,00'   }]},
+    { id:226, data:'Domingo, 31/05', couvert:'', bandas:[
+      { nome:'Grupo Zero4', cache:'500,00'   },
+      { nome:'Ser Samba',   cache:'3.000,00' }]},
+  ],
+};
 const SHOWS_ABRIL_2026 = {
   14: [ // Semana 14 (01–05/04)
     { id:101, data:'Quarta-feira, 01/04', couvert:'', bandas:[
